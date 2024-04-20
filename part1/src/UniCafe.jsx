@@ -30,21 +30,7 @@ const Feedback = ({ onChange }) => {
 const Button = ({ text, onClick }) => <button onClick={onClick}>{text}</button>;
 
 const Statistics = ({ data }) => {
-  const [hasStats, all, average, positive] = useMemo(() => {
-    const allValue = FEEDBACK_TYPES.reduce((acc, f) => acc + data[f], 0);
-
-    return [
-      FEEDBACK_TYPES.some((f) => data[f]),
-      allValue,
-      allValue
-        ? FEEDBACK_TYPES.reduce(
-            (acc, f) => acc + FEEDBACK_VALUES[f] * data[f],
-            0
-          ) / allValue
-        : 0,
-      allValue ? data.good / allValue : 0,
-    ];
-  }, [data]);
+  const [hasStats, all, average, positive] = useStats(data);
 
   if (!hasStats) return <p>No feedback given</p>;
 
@@ -64,6 +50,23 @@ const Statistics = ({ data }) => {
     </>
   );
 };
+
+const useStats = (data) =>
+  useMemo(() => {
+    const allValue = FEEDBACK_TYPES.reduce((acc, f) => acc + data[f], 0);
+
+    return [
+      FEEDBACK_TYPES.some((f) => data[f]),
+      allValue,
+      allValue
+        ? FEEDBACK_TYPES.reduce(
+            (acc, f) => acc + FEEDBACK_VALUES[f] * data[f],
+            0
+          ) / allValue
+        : 0,
+      allValue ? data.good / allValue : 0,
+    ];
+  }, [data]);
 
 const StatisticLine = ({ text, value }) => (
   <tr>
