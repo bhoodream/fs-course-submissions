@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Button } from "./Button";
 
 export const UniCafe = () => {
   const [state, setState] = useState(() =>
@@ -26,8 +27,6 @@ const Feedback = ({ onChange }) => {
     </>
   );
 };
-
-const Button = ({ text, onClick }) => <button onClick={onClick}>{text}</button>;
 
 const Statistics = ({ data }) => {
   const [hasStats, all, average, positive] = useStats(data);
