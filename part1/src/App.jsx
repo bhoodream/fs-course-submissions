@@ -1,58 +1,18 @@
-import { Anecdotes } from "./Anecdotes";
-import { UniCafe } from "./UniCafe";
+import { Anecdotes } from "./components/Anecdotes";
+import { Courses } from "./components/Courses";
+import { PhoneBook } from "./components/PhoneBook";
+import { UniCafe } from "./components/UniCafe";
 
 function App() {
   return (
     <div>
-      <Header course={COURSE.name} />
-      <Content parts={COURSE.parts} />
-      <Total parts={COURSE.parts} />
+      <h1>Fullstack Open</h1>
+      <PhoneBook />
+      <Courses />
       <UniCafe />
       <Anecdotes />
     </div>
   );
 }
-
-const Header = ({ course }) => {
-  return <h1>{course}</h1>;
-};
-
-const Content = ({ parts }) => {
-  return (
-    <>
-      {parts.map(({ name, exercises }) => (
-        <Part key={name} title={name} amount={exercises} />
-      ))}
-    </>
-  );
-};
-
-const Part = ({ title, amount }) => (
-  <p key={title}>
-    {title} {amount}
-  </p>
-);
-
-const Total = ({ parts }) => (
-  <p>Number of exercises {parts.reduce((acc, p) => acc + p.exercises, 0)}</p>
-);
-
-const COURSE = {
-  name: "Half Stack application development",
-  parts: [
-    {
-      name: "Fundamentals of React",
-      exercises: 10,
-    },
-    {
-      name: "Using props to pass data",
-      exercises: 7,
-    },
-    {
-      name: "State of a component",
-      exercises: 14,
-    },
-  ],
-};
 
 export default App;
