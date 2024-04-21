@@ -8,10 +8,13 @@ import {
 } from "../services/persons";
 import { useDataInvalidation } from "../hooks/useDataInvalidation";
 import { Button } from "./Button";
+import { useAlert } from "./Alert/useAlert";
+import { Alert } from "./Alert";
 
 export const PhoneBook = () => {
   const [persons, setPersons] = useState([]);
   const [search, setSearch] = useState("");
+  const alert = useAlert();
   const invalidation = useDataInvalidation();
 
   const visiblePersons = useMemo(
@@ -28,6 +31,7 @@ export const PhoneBook = () => {
     const existsPerson = persons.find((person) =>
       UNIQ_FIELDS.some((v) => person[v] === data[v])
     );
+    const operation = existsPerson ? "update" : "create";
 
     if (
       existsPerson &&
@@ -42,14 +46,12 @@ export const PhoneBook = () => {
       : createPerson(data));
 
     if (response.error) {
-      alert(
-        `Error on person ${existsPerson ? "update" : "create"}: ${
-          response.error
-        }`
-      );
+      alert.show(`Error on person ${operation}: ${response.error}`, "error");
 
       return false;
     }
+
+    alert.show(`${operation} ${data.name}`, "success");
 
     invalidation.invalidate();
 
@@ -62,27 +64,32 @@ export const PhoneBook = () => {
     const response = await deletePerson(person.id);
 
     if (response.error)
-      return alert(
-        `Error on person (${person.name}) delete: ${response.error}`
+      return alert.show(
+        `Error on person (${person.name}) delete: ${response.error}`,
+        "error"
       );
+
+    alert.show(`Deleted ${person.name}`, "success");
 
     invalidation.invalidate();
   };
 
   useEffect(() => {
     getPersons().then((response) => {
-      if (response.error) return alert(`Error on persons: ${response.error}`);
+      if (response.error)
+        return alert.show(`Error on persons: ${response.error}`, "error");
 
       setPersons(response.data);
     });
-  }, [invalidation.date]);
+  }, [invalidation.date, alert.show]);
 
   return (
     <div>
       <h2>Phonebook</h2>
-      <Search onChange={setSearch} />
       <Form onData={addPerson} />
+      <Alert {...alert.state} />
       <List
+        search={<Search onChange={setSearch} />}
         items={persons}
         visibleItems={visiblePersons}
         onDelete={removePerson}
@@ -104,10 +111,10 @@ const Form = ({ onData }) => {
   const onChangeInput = ({ target: { name, value } }) =>
     setFormState((p) => ({ ...p, [name]: value }));
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
 
-    if (!onData({ ...formState })) return;
+    if (!(await onData({ ...formState }))) return;
 
     setFormState({ name: "", phone: "" });
   };
@@ -132,9 +139,10 @@ const Form = ({ onData }) => {
   );
 };
 
-const List = ({ items, visibleItems, onDelete }) => (
+const List = ({ items, visibleItems, onDelete, search }) => (
   <>
     <h3>Persons</h3>
+    {search}
     {items.length <= 0
       ? "no persons..."
       : visibleItems.length <= 0
