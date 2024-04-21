@@ -10,21 +10,23 @@ import { useDataInvalidation } from "../hooks/useDataInvalidation";
 import { Button } from "./Button";
 import { useAlert } from "./Alert/useAlert";
 import { Alert } from "./Alert";
+import { Search } from "./Search";
+import { useSearch } from "./Search/useSearch";
 
 export const PhoneBook = () => {
   const [persons, setPersons] = useState([]);
-  const [search, setSearch] = useState("");
+  const search = useSearch();
   const alert = useAlert();
   const invalidation = useDataInvalidation();
 
   const visiblePersons = useMemo(
     () =>
-      search
+      search.value
         ? persons.filter((p) =>
-            p.name.toLowerCase().includes(search.toLowerCase())
+            p.name.toLowerCase().includes(search.value.toLowerCase())
           )
         : persons,
-    [persons, search]
+    [persons, search.value]
   );
 
   const addPerson = async (data) => {
@@ -89,7 +91,7 @@ export const PhoneBook = () => {
       <Form onData={addPerson} />
       <Alert {...alert.state} />
       <List
-        search={<Search onChange={setSearch} />}
+        search={<Search {...search} />}
         items={persons}
         visibleItems={visiblePersons}
         onDelete={removePerson}
@@ -97,13 +99,6 @@ export const PhoneBook = () => {
     </div>
   );
 };
-
-const Search = ({ onChange }) => (
-  <p>
-    Search:{" "}
-    <input required name="search" onChange={(e) => onChange(e.target.value)} />
-  </p>
-);
 
 const Form = ({ onData }) => {
   const [formState, setFormState] = useState({ name: "", phone: "" });
