@@ -70,7 +70,11 @@ export const PhoneBook = () => {
   };
 
   useEffect(() => {
-    getPersons().then((response) => setPersons(response.data));
+    getPersons().then((response) => {
+      if (response.error) return alert(`Error on persons: ${response.error}`);
+
+      setPersons(response.data);
+    });
   }, [invalidation.date]);
 
   return (
