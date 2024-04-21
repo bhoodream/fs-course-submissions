@@ -1,7 +1,11 @@
 import { service } from "../utils/services";
 
 export const getCountries = () => {
-  return service({ baseUrl: BASE_URL, method: "get", pathname: "/all" });
+  return service({
+    baseUrl: "https://studies.cs.helsinki.fi/restcountries/api",
+    method: "get",
+    pathname: "/all",
+  });
 };
 
 export const getCityWeather = (city) => {
@@ -17,5 +21,3 @@ export const getCityWeather = (city) => {
     },
   });
 };
-
-const BASE_URL = "https://studies.cs.helsinki.fi/restcountries/api";
