@@ -1,8 +1,18 @@
+import { useEffect } from "react";
 import { useMemo, useState } from "react";
+import {
+  createPerson,
+  getPersons,
+  deletePerson,
+  updatePerson,
+} from "../services/persons";
+import { useDataInvalidation } from "../hooks/useDataInvalidation";
+import { Button } from "./Button";
 
 export const PhoneBook = () => {
   const [persons, setPersons] = useState([]);
   const [search, setSearch] = useState("");
+  const invalidation = useDataInvalidation();
 
   const visiblePersons = useMemo(
     () =>
@@ -14,15 +24,65 @@ export const PhoneBook = () => {
     [persons, search]
   );
 
+  const addPerson = async (data) => {
+    const existsPerson = persons.find((person) =>
+      UNIQ_VALUES.some((v) => person[v] === data[v])
+    );
+
+    if (
+      existsPerson &&
+      !confirm(
+        `${existsPerson.name} is already added to phonebook, replace data with new one?`
+      )
+    )
+      return false;
+
+    const response = await (existsPerson
+      ? updatePerson(existsPerson.id, data)
+      : createPerson(data));
+
+    if (response.error) {
+      alert(
+        `Error on person ${existsPerson ? "update" : "create"}: ${
+          response.error
+        }`
+      );
+
+      return false;
+    }
+
+    invalidation.invalidate();
+
+    return true;
+  };
+
+  const removePerson = async (person) => {
+    if (!confirm(`Delete ${person.name} ?`)) return;
+
+    const response = await deletePerson(person.id);
+
+    if (response.error)
+      return alert(
+        `Error on person (${person.name}) delete: ${response.error}`
+      );
+
+    invalidation.invalidate();
+  };
+
+  useEffect(() => {
+    getPersons().then((response) => setPersons(response.data));
+  }, [invalidation.date]);
+
   return (
     <div>
       <h2>Phonebook</h2>
       <Search onChange={setSearch} />
-      <Form
-        onData={(data) => setPersons((p) => [...p, { ...data }])}
-        data={persons}
+      <Form onData={addPerson} />
+      <List
+        items={persons}
+        visibleItems={visiblePersons}
+        onDelete={removePerson}
       />
-      <List items={persons} visibleItems={visiblePersons} />
     </div>
   );
 };
@@ -34,7 +94,7 @@ const Search = ({ onChange }) => (
   </p>
 );
 
-const Form = ({ onData, data }) => {
+const Form = ({ onData }) => {
   const [formState, setFormState] = useState({ name: "", phone: "" });
 
   const onChangeInput = ({ target: { name, value } }) =>
@@ -43,17 +103,8 @@ const Form = ({ onData, data }) => {
   const onSubmit = (e) => {
     e.preventDefault();
 
-    if (
-      UNIQ_VALUES.some((name) => data.some((p) => p[name] === formState[name]))
-    ) {
-      return alert(
-        `Some uniq values of phonebook (${UNIQ_VALUES}) is not uniq in new person: ${JSON.stringify(
-          formState
-        )}`
-      );
-    }
+    if (!onData({ ...formState })) return;
 
-    onData({ ...formState });
     setFormState({ name: "", phone: "" });
   };
 
@@ -77,7 +128,7 @@ const Form = ({ onData, data }) => {
   );
 };
 
-const List = ({ items, visibleItems }) => (
+const List = ({ items, visibleItems, onDelete }) => (
   <>
     <h3>Persons</h3>
     {items.length <= 0
@@ -87,7 +138,7 @@ const List = ({ items, visibleItems }) => (
       : null}
     {visibleItems.map((p) => (
       <p key={p.name}>
-        {p.name} {p.phone}
+        {p.name} {p.phone} <Button text="delete" onClick={() => onDelete(p)} />
       </p>
     ))}
   </>
