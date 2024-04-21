@@ -12,19 +12,22 @@ import { Button } from "./Button";
 export const Countries = () => {
   const [countries, setCountries] = useState([]);
   const search = useSearch();
-  const [visibleCountries, exactCountry] = useMemo(
-    () => [
-      search.value
-        ? countries.filter((c) =>
-            c.name.common.toLowerCase().includes(search.value.toLowerCase())
-          )
-        : [],
-      countries.find(
-        (c) => c.name.common.toLowerCase() === search.value.toLowerCase()
-      ),
-    ],
-    [countries, search.value]
-  );
+  const [visibleCountries, exactCountry] = useMemo(() => {
+    const searchCountries = search.value
+      ? countries.filter((c) =>
+          c.name.common.toLowerCase().includes(search.value.toLowerCase())
+        )
+      : [];
+
+    return [
+      searchCountries,
+      searchCountries.length === 1
+        ? searchCountries[0]
+        : countries.find(
+            (c) => c.name.common.toLowerCase() === search.value.toLowerCase()
+          ),
+    ];
+  }, [countries, search.value]);
   const alert = useAlert();
 
   useEffect(() => {
@@ -50,8 +53,6 @@ export const Countries = () => {
             "No countries..."
           ) : visibleCountries.length > 10 ? (
             "Too many matches, specify another filter"
-          ) : visibleCountries.length === 1 ? (
-            <Country data={visibleCountries[0]} />
           ) : (
             visibleCountries.map((c) => (
               <p key={c.name.common}>
