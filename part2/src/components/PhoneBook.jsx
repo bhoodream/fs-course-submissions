@@ -26,7 +26,7 @@ export const PhoneBook = () => {
 
   const addPerson = async (data) => {
     const existsPerson = persons.find((person) =>
-      UNIQ_VALUES.some((v) => person[v] === data[v])
+      UNIQ_FIELDS.some((v) => person[v] === data[v])
     );
 
     if (
@@ -149,4 +149,4 @@ const List = ({ items, visibleItems, onDelete }) => (
 );
 
 const INPUTS = [{ name: "name" }, { name: "phone" }];
-const UNIQ_VALUES = ["name"];
+const UNIQ_FIELDS = ["name"];
