@@ -5,7 +5,7 @@ import { PhoneBook } from "./components/PhoneBook";
 function App() {
   return (
     <div>
-      <h1>Fullstack Open</h1>
+      <h1>Fullstack Open Course</h1>
       <Countries />
       <PhoneBook />
       <Courses />
