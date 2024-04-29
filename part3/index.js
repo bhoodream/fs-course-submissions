@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const persons = require("./mock/persons.json");
 
 app.use(express.json());
 
@@ -21,55 +22,88 @@ let notes = [
   },
 ];
 
+const resources = [
+  {
+    route: "notes",
+    items: notes,
+    createValidate: (body) =>
+      Boolean(body.content) ? "" : "content is missing",
+    create: (body) => ({
+      content: body.content,
+      important: Boolean(body.important) || false,
+    }),
+  },
+  {
+    route: "persons",
+    items: persons,
+    createValidate: (body) =>
+      !Boolean(body.name)
+        ? "name is missing"
+        : !Boolean(body.number)
+        ? "number is missing"
+        : persons.some((p) => p.name === body.name)
+        ? `person with name (${body.name}) already exists`
+        : "",
+    create: (body) => body,
+  },
+];
+
 app.get("/", (request, response) => {
   response.send("<h1>Hello World123!</h1>");
 });
 
-app.get("/api/notes", (request, response) => {
-  response.json(notes);
+app.get("/info", (request, response) => {
+  response.send(
+    `<p>Phonebook has info for ${persons.length} people</p><p>${new Date()}</p>`
+  );
 });
 
-app.get("/api/notes/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const note = notes.find((note) => note.id === id);
-  if (note) {
-    response.json(note);
-  } else {
-    response.status(404).end();
-  }
+resources.forEach(({ route, items, createValidate, create }) => {
+  app.get(`/api/${route}`, (request, response) => {
+    response.json(items);
+  });
+
+  app.get(`/api/${route}/:id`, (request, response) => {
+    const id = Number(request.params.id);
+    const item = items.find((i) => i.id === id);
+
+    if (item) {
+      response.json(item);
+    } else {
+      response.status(404).end();
+    }
+  });
+
+  app.delete(`/api/${route}/:id`, (request, response) => {
+    const id = Number(request.params.id);
+    const deleteIndex = items.findIndex((i) => i.id === id);
+
+    deleteIndex !== -1 && items.splice(deleteIndex, 1);
+
+    response.status(204).end();
+  });
+
+  app.post(`/api/${route}`, (request, response) => {
+    const body = request.body;
+    const createError = createValidate(body);
+
+    if (createError) {
+      return response.status(400).json({ error: createError });
+    }
+
+    const newItem = { ...create(body), id: generateId(items) };
+
+    items.push(newItem);
+
+    response.json(newItem);
+  });
 });
 
-app.delete("/api/notes/:id", (request, response) => {
-  const id = Number(request.params.id);
-  notes = notes.filter((note) => note.id !== id);
+const generateId = (items) => {
+  const maxId = items.length > 0 ? Math.max(...items.map((n) => n.id)) : 0;
 
-  response.status(204).end();
-});
-
-const generateId = () => {
-  const maxId = notes.length > 0 ? Math.max(...notes.map((n) => n.id)) : 0;
   return maxId + 1;
 };
-
-app.post("/api/notes", (request, response) => {
-  const body = request.body;
-
-  if (!body.content) {
-    return response.status(400).json({
-      error: "content missing",
-    });
-  }
-
-  const note = {
-    content: body.content,
-    important: Boolean(body.important) || false,
-    id: generateId(),
-  };
-
-  notes = notes.concat(note);
-
-  response.json(note);
-});
 
 const PORT = 3001;
 app.listen(PORT, () => {
