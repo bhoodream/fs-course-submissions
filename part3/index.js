@@ -1,8 +1,11 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
+
 const app = express();
 const persons = require("./mock/persons.json");
 
+app.use(cors());
 app.use(express.json());
 morgan.token("body", (req, res) => JSON.stringify(req.body));
 app.use(
@@ -55,8 +58,8 @@ const resources = [
     createValidate: (body) =>
       !Boolean(body.name)
         ? "name is missing"
-        : !Boolean(body.number)
-        ? "number is missing"
+        : !Boolean(body.phone)
+        ? "phone is missing"
         : persons.some((p) => p.name === body.name)
         ? `person with name (${body.name}) already exists`
         : "",
@@ -127,7 +130,7 @@ const generateId = (items) => {
   return maxId + 1;
 };
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
