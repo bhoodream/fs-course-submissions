@@ -1,8 +1,24 @@
 const express = require("express");
+const morgan = require("morgan");
 const app = express();
 const persons = require("./mock/persons.json");
 
 app.use(express.json());
+morgan.token("body", (req, res) => JSON.stringify(req.body));
+app.use(
+  morgan((tokens, req, res) =>
+    [
+      tokens.method(req, res),
+      tokens.url(req, res),
+      tokens.status(req, res),
+      tokens.res(req, res, "content-length"),
+      "-",
+      tokens["response-time"](req, res),
+      "ms",
+      tokens["body"](req, res),
+    ].join(" ")
+  )
+);
 
 let notes = [
   {
@@ -98,6 +114,12 @@ resources.forEach(({ route, items, createValidate, create }) => {
     response.json(newItem);
   });
 });
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: "unknown endpoint" });
+};
+
+app.use(unknownEndpoint);
 
 const generateId = (items) => {
   const maxId = items.length > 0 ? Math.max(...items.map((n) => n.id)) : 0;
