@@ -6,6 +6,7 @@ const app = express();
 const persons = require("./mock/persons.json");
 
 app.use(cors());
+app.use(express.static("dist"));
 app.use(express.json());
 morgan.token("body", (req, res) => JSON.stringify(req.body));
 app.use(
@@ -67,11 +68,7 @@ const resources = [
   },
 ];
 
-app.get("/", (request, response) => {
-  response.send("<h1>Hello World123!</h1>");
-});
-
-app.get("/info", (request, response) => {
+app.get("/api/info", (request, response) => {
   response.send(
     `<p>Phonebook has info for ${persons.length} people</p><p>${new Date()}</p>`
   );
