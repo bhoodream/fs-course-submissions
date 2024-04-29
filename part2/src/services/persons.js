@@ -21,4 +21,4 @@ export const deletePerson = (id) => {
   return service({ baseUrl: BASE_URL, method: "delete", pathname: `/${id}` });
 };
 
-const BASE_URL = "http://localhost:3001/api/persons";
+const BASE_URL = "/api/persons";
