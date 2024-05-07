@@ -12,6 +12,7 @@ const Person = require("./models/person");
 app.use(cors());
 app.use(express.static("dist"));
 app.use(express.json());
+
 morgan.token("body", (req, res) => JSON.stringify(req.body));
 app.use(
   morgan((tokens, req, res) =>
@@ -105,7 +106,7 @@ resources.forEach(
 
     app.delete(`/api/${route}/:id`, async (request, response, next) => {
       try {
-        await Model.findOneAndDelete({ _id: request.params.id });
+        await Model.findByIdAndDelete(request.params.id);
 
         response.status(204).end();
       } catch (e) {
@@ -131,8 +132,8 @@ resources.forEach(
 
       if (error) return response.status(400).json({ error });
 
-      const updatedItem = await Model.findOneAndUpdate(
-        { name: body.name },
+      const updatedItem = await Model.findByIdAndUpdate(
+        request.params.id,
         body,
         { new: true }
       );
@@ -146,6 +147,8 @@ const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: "unknown endpoint" });
 };
 
+app.use(unknownEndpoint);
+
 const errorHandler = (error, request, response, next) => {
   console.error(error.name);
 
@@ -156,7 +159,6 @@ const errorHandler = (error, request, response, next) => {
   next(error);
 };
 
-app.use(unknownEndpoint);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
