@@ -27,6 +27,7 @@ app.use(
     ].join(" ")
   )
 );
+
 const validatePerson = (body) =>
   !Boolean(body.name)
     ? "name is missing"
@@ -88,39 +89,35 @@ resources.forEach(
       response.json(items);
     });
 
-    app.get(`/api/${route}/:id`, async (request, response) => {
-      let item;
-
+    app.get(`/api/${route}/:id`, async (request, response, next) => {
       try {
-        item = await Model.findById(request.params.id);
-      } catch (e) {
-        return response.status(500).json({ error: e.toString() });
-      }
+        const item = await Model.findById(request.params.id);
 
-      if (item) {
-        response.json(item);
-      } else {
-        response.status(404).end();
+        if (item) {
+          response.json(item);
+        } else {
+          response.status(404).end();
+        }
+      } catch (e) {
+        next(e);
       }
     });
 
-    app.delete(`/api/${route}/:id`, async (request, response) => {
+    app.delete(`/api/${route}/:id`, async (request, response, next) => {
       try {
         await Model.findOneAndDelete({ _id: request.params.id });
-      } catch (e) {
-        return response.status(500).json({ error: e.toString() });
-      }
 
-      response.status(204).end();
+        response.status(204).end();
+      } catch (e) {
+        next(e);
+      }
     });
 
     app.post(`/api/${route}`, async (request, response) => {
       const body = request.body;
-      const createError = await createValidate(body);
+      const error = await createValidate(body);
 
-      if (createError) {
-        return response.status(400).json({ error: createError });
-      }
+      if (error) return response.status(400).json({ error });
 
       const newItem = new Model(create(body));
       const savedItem = await newItem.save();
@@ -130,11 +127,9 @@ resources.forEach(
 
     app.put(`/api/${route}/:id`, async (request, response) => {
       const body = request.body;
-      const updateError = await updateValidate(body);
+      const error = await updateValidate(body);
 
-      if (updateError) {
-        return response.status(400).json({ error: updateError });
-      }
+      if (error) return response.status(400).json({ error });
 
       const updatedItem = await Model.findOneAndUpdate(
         { name: body.name },
@@ -151,7 +146,18 @@ const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: "unknown endpoint" });
 };
 
+const errorHandler = (error, request, response, next) => {
+  console.error(error.name);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
+
+  next(error);
+};
+
 app.use(unknownEndpoint);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
