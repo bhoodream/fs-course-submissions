@@ -1,9 +1,13 @@
+require("dotenv").config();
+
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 
 const app = express();
-const persons = require("./mock/persons.json");
+
+const Note = require("./models/note");
+const Person = require("./models/person");
 
 app.use(cors());
 app.use(express.static("dist"));
@@ -23,30 +27,18 @@ app.use(
     ].join(" ")
   )
 );
-
-let notes = [
-  {
-    id: 1,
-    content: "HTML is easy",
-    important: true,
-  },
-  {
-    id: 2,
-    content: "Browser can execute only JavaScript",
-    important: false,
-  },
-  {
-    id: 3,
-    content: "GET and POST are the most important methods of HTTP protocol",
-    important: true,
-  },
-];
+const validatePerson = (body) =>
+  !Boolean(body.name)
+    ? "name is missing"
+    : !Boolean(body.phone)
+    ? "phone is missing"
+    : "";
 
 const resources = [
   {
     route: "notes",
-    items: notes,
-    createValidate: (body) =>
+    Model: Note,
+    createValidate: async (body) =>
       Boolean(body.content) ? "" : "content is missing",
     create: (body) => ({
       content: body.content,
@@ -55,77 +47,111 @@ const resources = [
   },
   {
     route: "persons",
-    items: persons,
-    createValidate: (body) =>
-      !Boolean(body.name)
-        ? "name is missing"
-        : !Boolean(body.phone)
-        ? "phone is missing"
-        : persons.some((p) => p.name === body.name)
-        ? `person with name (${body.name}) already exists`
-        : "",
+    Model: Person,
+    createValidate: async (body) => {
+      const persons = await Person.find({});
+
+      return (
+        validatePerson(body) ||
+        (persons.some((p) => p.name === body.name) &&
+          `person with name (${body.name}) already exists`) ||
+        ""
+      );
+    },
+    updateValidate: async (body) => {
+      const persons = await Person.find({});
+
+      return (
+        validatePerson(body) ||
+        (!persons.some((p) => p.name === body.name) &&
+          `person with name (${body.name}) not exists`) ||
+        ""
+      );
+    },
     create: (body) => body,
   },
 ];
 
-app.get("/api/info", (request, response) => {
+app.get("/api/info", async (request, response) => {
+  const persons = await Person.find({});
+
   response.send(
     `<p>Phonebook has info for ${persons.length} people</p><p>${new Date()}</p>`
   );
 });
 
-resources.forEach(({ route, items, createValidate, create }) => {
-  app.get(`/api/${route}`, (request, response) => {
-    response.json(items);
-  });
+resources.forEach(
+  ({ route, Model, createValidate, updateValidate, create }) => {
+    app.get(`/api/${route}`, async (request, response) => {
+      const items = await Model.find({});
 
-  app.get(`/api/${route}/:id`, (request, response) => {
-    const id = Number(request.params.id);
-    const item = items.find((i) => i.id === id);
+      response.json(items);
+    });
 
-    if (item) {
-      response.json(item);
-    } else {
-      response.status(404).end();
-    }
-  });
+    app.get(`/api/${route}/:id`, async (request, response) => {
+      let item;
 
-  app.delete(`/api/${route}/:id`, (request, response) => {
-    const id = Number(request.params.id);
-    const deleteIndex = items.findIndex((i) => i.id === id);
+      try {
+        item = await Model.findById(request.params.id);
+      } catch (e) {
+        return response.status(500).json({ error: e.toString() });
+      }
 
-    deleteIndex !== -1 && items.splice(deleteIndex, 1);
+      if (item) {
+        response.json(item);
+      } else {
+        response.status(404).end();
+      }
+    });
 
-    response.status(204).end();
-  });
+    app.delete(`/api/${route}/:id`, async (request, response) => {
+      try {
+        await Model.findOneAndDelete({ _id: request.params.id });
+      } catch (e) {
+        return response.status(500).json({ error: e.toString() });
+      }
 
-  app.post(`/api/${route}`, (request, response) => {
-    const body = request.body;
-    const createError = createValidate(body);
+      response.status(204).end();
+    });
 
-    if (createError) {
-      return response.status(400).json({ error: createError });
-    }
+    app.post(`/api/${route}`, async (request, response) => {
+      const body = request.body;
+      const createError = await createValidate(body);
 
-    const newItem = { ...create(body), id: generateId(items) };
+      if (createError) {
+        return response.status(400).json({ error: createError });
+      }
 
-    items.push(newItem);
+      const newItem = new Model(create(body));
+      const savedItem = await newItem.save();
 
-    response.json(newItem);
-  });
-});
+      response.json(savedItem);
+    });
+
+    app.put(`/api/${route}/:id`, async (request, response) => {
+      const body = request.body;
+      const updateError = await updateValidate(body);
+
+      if (updateError) {
+        return response.status(400).json({ error: updateError });
+      }
+
+      const updatedItem = await Model.findOneAndUpdate(
+        { name: body.name },
+        body,
+        { new: true }
+      );
+
+      response.json(updatedItem);
+    });
+  }
+);
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: "unknown endpoint" });
 };
 
 app.use(unknownEndpoint);
-
-const generateId = (items) => {
-  const maxId = items.length > 0 ? Math.max(...items.map((n) => n.id)) : 0;
-
-  return maxId + 1;
-};
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
