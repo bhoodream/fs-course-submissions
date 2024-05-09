@@ -42,7 +42,7 @@ const resources = [
     Model: Note,
     createValidate: async (body) =>
       Boolean(body.content) ? "" : "content is missing",
-    create: (body) => ({
+    prepareData: (body) => ({
       content: body.content,
       important: Boolean(body.important) || false,
     }),
@@ -70,7 +70,7 @@ const resources = [
         ""
       );
     },
-    create: (body) => body,
+    prepareData: (body) => body,
   },
 ];
 
@@ -83,7 +83,7 @@ app.get("/api/info", async (request, response) => {
 });
 
 resources.forEach(
-  ({ route, Model, createValidate, updateValidate, create }) => {
+  ({ route, Model, createValidate, updateValidate, prepareData }) => {
     app.get(`/api/${route}`, async (request, response) => {
       const items = await Model.find({});
 
@@ -114,28 +114,37 @@ resources.forEach(
       }
     });
 
-    app.post(`/api/${route}`, async (request, response) => {
+    app.post(`/api/${route}`, async (request, response, next) => {
       const body = request.body;
-      const error = await createValidate(body);
 
-      if (error) return response.status(400).json({ error });
+      if (createValidate) {
+        const error = await createValidate(body);
 
-      const newItem = new Model(create(body));
-      const savedItem = await newItem.save();
+        if (error) return response.status(400).json({ error });
+      }
 
-      response.json(savedItem);
+      const newItem = new Model(prepareData(body));
+      try {
+        const savedItem = await newItem.save();
+        response.json(savedItem);
+      } catch (error) {
+        next(error);
+      }
     });
 
     app.put(`/api/${route}/:id`, async (request, response) => {
       const body = request.body;
-      const error = await updateValidate(body);
 
-      if (error) return response.status(400).json({ error });
+      if (updateValidate) {
+        const error = await updateValidate(body);
+
+        if (error) return response.status(400).json({ error });
+      }
 
       const updatedItem = await Model.findByIdAndUpdate(
         request.params.id,
-        body,
-        { new: true }
+        prepareData(body),
+        { new: true, runValidators: true, context: "query" }
       );
 
       response.json(updatedItem);
@@ -154,6 +163,8 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return response.status(400).json({ error: error.message });
   }
 
   next(error);
