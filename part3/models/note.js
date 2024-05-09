@@ -1,5 +1,5 @@
-const mongooseConnection = require("../mongooseConnection");
-const { getMongoSchemaOptions } = require("../utils/models");
+const mongooseConnection = require('../mongooseConnection');
+const { getMongoSchemaOptions } = require('../utils/models');
 
 const schema = new mongooseConnection.Schema(
   {
@@ -10,7 +10,7 @@ const schema = new mongooseConnection.Schema(
     },
     important: Boolean,
   },
-  getMongoSchemaOptions()
+  getMongoSchemaOptions(),
 );
 
-module.exports = mongooseConnection.model("Note", schema);
+module.exports = mongooseConnection.model('Note', schema);

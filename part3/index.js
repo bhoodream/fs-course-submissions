@@ -1,54 +1,49 @@
-require("dotenv").config();
+require('dotenv').config();
 
-const express = require("express");
-const morgan = require("morgan");
-const cors = require("cors");
+const express = require('express');
+const morgan = require('morgan');
+const cors = require('cors');
 
 const app = express();
 
-const Note = require("./models/note");
-const Person = require("./models/person");
+const Note = require('./models/note');
+const Person = require('./models/person');
 
 app.use(cors());
-app.use(express.static("dist"));
+app.use(express.static('dist'));
 app.use(express.json());
 
-morgan.token("body", (req, res) => JSON.stringify(req.body));
+morgan.token('body', (req) => JSON.stringify(req.body));
 app.use(
   morgan((tokens, req, res) =>
     [
       tokens.method(req, res),
       tokens.url(req, res),
       tokens.status(req, res),
-      tokens.res(req, res, "content-length"),
-      "-",
-      tokens["response-time"](req, res),
-      "ms",
-      tokens["body"](req, res),
-    ].join(" ")
-  )
+      tokens.res(req, res, 'content-length'),
+      '-',
+      tokens['response-time'](req, res),
+      'ms',
+      tokens['body'](req, res),
+    ].join(' '),
+  ),
 );
 
 const validatePerson = (body) =>
-  !Boolean(body.name)
-    ? "name is missing"
-    : !Boolean(body.phone)
-    ? "phone is missing"
-    : "";
+  !body.name ? 'name is missing' : !body.phone ? 'phone is missing' : '';
 
 const resources = [
   {
-    route: "notes",
+    route: 'notes',
     Model: Note,
-    createValidate: async (body) =>
-      Boolean(body.content) ? "" : "content is missing",
+    createValidate: async (body) => (!body.content ? 'content is missing' : ''),
     prepareData: (body) => ({
       content: body.content,
       important: Boolean(body.important) || false,
     }),
   },
   {
-    route: "persons",
+    route: 'persons',
     Model: Person,
     createValidate: async (body) => {
       const persons = await Person.find({});
@@ -57,7 +52,7 @@ const resources = [
         validatePerson(body) ||
         (persons.some((p) => p.name === body.name) &&
           `person with name (${body.name}) already exists`) ||
-        ""
+        ''
       );
     },
     updateValidate: async (body) => {
@@ -67,18 +62,18 @@ const resources = [
         validatePerson(body) ||
         (!persons.some((p) => p.name === body.name) &&
           `person with name (${body.name}) not exists`) ||
-        ""
+        ''
       );
     },
     prepareData: (body) => body,
   },
 ];
 
-app.get("/api/info", async (request, response) => {
+app.get('/api/info', async (request, response) => {
   const persons = await Person.find({});
 
   response.send(
-    `<p>Phonebook has info for ${persons.length} people</p><p>${new Date()}</p>`
+    `<p>Phonebook has info for ${persons.length} people</p><p>${new Date()}</p>`,
   );
 });
 
@@ -146,7 +141,7 @@ resources.forEach(
         const updatedItem = await Model.findByIdAndUpdate(
           request.params.id,
           prepareData(body),
-          { new: true, runValidators: true, context: "query" }
+          { new: true, runValidators: true, context: 'query' },
         );
 
         response.json(updatedItem);
@@ -154,11 +149,11 @@ resources.forEach(
         next(error);
       }
     });
-  }
+  },
 );
 
 const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: "unknown endpoint" });
+  response.status(404).send({ error: 'unknown endpoint' });
 };
 
 app.use(unknownEndpoint);
@@ -166,9 +161,9 @@ app.use(unknownEndpoint);
 const errorHandler = (error, request, response, next) => {
   console.error(error.name);
 
-  if (error.name === "CastError") {
-    return response.status(400).send({ error: "malformatted id" });
-  } else if (error.name === "ValidationError") {
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' });
+  } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message });
   }
 
