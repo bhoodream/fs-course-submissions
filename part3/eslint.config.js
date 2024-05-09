@@ -12,5 +12,6 @@ module.exports = [
      * @Note: Пришлось прокидывать через cli "--ignore-pattern dist", чтобы eslint не зависал
      */
     ignores: ['dist'],
+    rules: {},
   },
 ];
