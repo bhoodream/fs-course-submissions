@@ -124,6 +124,7 @@ resources.forEach(
       }
 
       const newItem = new Model(prepareData(body));
+
       try {
         const savedItem = await newItem.save();
         response.json(savedItem);
@@ -132,7 +133,7 @@ resources.forEach(
       }
     });
 
-    app.put(`/api/${route}/:id`, async (request, response) => {
+    app.put(`/api/${route}/:id`, async (request, response, next) => {
       const body = request.body;
 
       if (updateValidate) {
@@ -141,13 +142,17 @@ resources.forEach(
         if (error) return response.status(400).json({ error });
       }
 
-      const updatedItem = await Model.findByIdAndUpdate(
-        request.params.id,
-        prepareData(body),
-        { new: true, runValidators: true, context: "query" }
-      );
+      try {
+        const updatedItem = await Model.findByIdAndUpdate(
+          request.params.id,
+          prepareData(body),
+          { new: true, runValidators: true, context: "query" }
+        );
 
-      response.json(updatedItem);
+        response.json(updatedItem);
+      } catch (error) {
+        next(error);
+      }
     });
   }
 );

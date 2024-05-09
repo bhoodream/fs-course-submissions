@@ -12,6 +12,7 @@ import { useAlert } from "./Alert/useAlert";
 import { Alert } from "./Alert";
 import { Search } from "./Search";
 import { useSearch } from "./Search/useSearch";
+import { getApiErrorMsg } from "../utils/api";
 
 export const PhoneBook = () => {
   const [persons, setPersons] = useState([]);
@@ -48,7 +49,7 @@ export const PhoneBook = () => {
       : createPerson(data));
 
     if (response.error) {
-      alert.show(`Error on person ${operation}: ${response.error}`, "error");
+      alert.show(getApiErrorMsg(response), "error");
 
       return false;
     }
@@ -65,11 +66,7 @@ export const PhoneBook = () => {
 
     const response = await deletePerson(person.id);
 
-    if (response.error)
-      return alert.show(
-        `Error on person (${person.name}) delete: ${response.error}`,
-        "error"
-      );
+    if (response.error) return alert.show(getApiErrorMsg(response), "error");
 
     alert.show(`Deleted ${person.name}`, "success");
 
@@ -78,8 +75,7 @@ export const PhoneBook = () => {
 
   useEffect(() => {
     getPersons().then((response) => {
-      if (response.error)
-        return alert.show(`Error on persons: ${response.error}`, "error");
+      if (response.error) return alert.show(getApiErrorMsg(response), "error");
 
       setPersons(response.data);
     });
