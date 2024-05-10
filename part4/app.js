@@ -18,7 +18,6 @@ app.use(cors());
 app.use(express.static('dist'));
 app.use(express.json());
 app.use(morganLogger);
-
 app.use('/api/info', infoRouter);
 app.use('/api/notes', notesRouter);
 app.use('/api/persons', personsRouter);
