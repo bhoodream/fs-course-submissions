@@ -21,9 +21,7 @@ const mostBlogs = (list) => {
   return maxBy(prepared, 'blogs');
 };
 const favoriteBlog = (list) => {
-  const sorted = list.toSorted((a, b) => b.likes - a.likes);
-
-  return sorted[0];
+  return maxBy(list, 'likes');
 };
 
 module.exports = {
