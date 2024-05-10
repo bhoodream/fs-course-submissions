@@ -13,4 +13,6 @@ const schema = new mongooseConnection.Schema(
   getMongoSchemaOptions(),
 );
 
-module.exports = mongooseConnection.model('Note', schema);
+const Note = mongooseConnection.model('Note', schema);
+
+module.exports = Note;

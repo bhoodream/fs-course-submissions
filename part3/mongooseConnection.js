@@ -1,12 +1,12 @@
-const mongoose = require('mongoose');
+const mongooseConnection = require('mongoose');
 
-mongoose.set('strictQuery', false);
+mongooseConnection.set('strictQuery', false);
 
 const url = process.env.MONGODB_URI;
 
 console.log('connecting to', url);
 
-mongoose
+mongooseConnection
   .connect(url)
   .then(() => {
     console.log('connected to MongoDB');
@@ -15,4 +15,4 @@ mongoose
     console.log('error connecting to MongoDB:', error.message);
   });
 
-module.exports = mongoose;
+module.exports = mongooseConnection;

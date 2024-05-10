@@ -21,4 +21,6 @@ const schema = new mongooseConnection.Schema(
   getMongoSchemaOptions(),
 );
 
-module.exports = mongooseConnection.model('Person', schema);
+const Person = mongooseConnection.model('Person', schema);
+
+module.exports = Person;

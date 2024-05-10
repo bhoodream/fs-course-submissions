@@ -1,7 +1,7 @@
-const mongooseConnection = require('../mongooseConnection');
+const mongoose = require('mongoose');
 const { getMongoSchemaOptions } = require('../utils/models');
 
-const schema = new mongooseConnection.Schema(
+const schema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -21,4 +21,6 @@ const schema = new mongooseConnection.Schema(
   getMongoSchemaOptions(),
 );
 
-module.exports = mongooseConnection.model('Person', schema);
+const Person = mongoose.model('Person', schema);
+
+module.exports = { Person };

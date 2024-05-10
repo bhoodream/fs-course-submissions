@@ -1,0 +1,32 @@
+GET http://localhost:3001/api/blogs
+
+###
+
+GET http://localhost:3001/api/blogs/663e41e47ce0081ebc18a8c8
+
+###
+
+DELETE http://localhost:3001/api/blogs/663e41e47ce0081ebc18a8c8
+
+###
+
+POST http://localhost:3001/api/blogs
+Content-Type: application/json
+
+{
+    "title": "123421312",
+    "author": "213",
+    "url": "213"
+}
+
+###
+
+PUT http://localhost:3001/api/blogs/6637edf00aee7f8a79805325
+Content-Type: application/json
+
+{
+    "title": "21312",
+    "author": "asdfasd",
+    "url": "asdfaa",
+    "likes": 213,
+}
