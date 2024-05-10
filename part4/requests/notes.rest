@@ -1,0 +1,29 @@
+GET http://localhost:3001/api/notes
+
+###
+
+GET http://localhost:3001/api/notes/6637b0ce9a6c106a66b9d69f
+
+###
+
+DELETE http://localhost:3001/api/notes/4
+
+###
+
+POST http://localhost:3001/api/notes
+Content-Type: application/json
+
+{
+    "content": "test123",
+    "important": false
+}
+
+###
+
+PUT http://localhost:3001/api/notes/6637b0ce9a6c106a66b9d69f
+Content-Type: application/json
+
+{
+    "content": "tsdf",
+    "important": false
+}
