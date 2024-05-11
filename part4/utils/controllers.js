@@ -7,31 +7,22 @@ const initResourceController =
       response.json(items);
     });
 
-    router.get(`/:id`, async (request, response, next) => {
-      try {
-        const item = await Model.findById(request.params.id);
+    router.get(`/:id`, async (request, response) => {
+      const item = await Model.findById(request.params.id);
 
-        if (item) {
-          response.json(item);
-        } else {
-          response.status(404).end();
-        }
-      } catch (e) {
-        next(e);
+      if (item) {
+        response.json(item);
+      } else {
+        response.status(404).end();
       }
     });
 
-    router.delete(`/:id`, async (request, response, next) => {
-      try {
-        await Model.findByIdAndDelete(request.params.id);
-
-        response.status(204).end();
-      } catch (e) {
-        next(e);
-      }
+    router.delete(`/:id`, async (request, response) => {
+      await Model.findByIdAndDelete(request.params.id);
+      response.status(204).end();
     });
 
-    router.post(`/`, async (request, response, next) => {
+    router.post(`/`, async (request, response) => {
       const body = request.body;
 
       if (createValidate) {
@@ -42,16 +33,11 @@ const initResourceController =
 
       const newItem = new Model(initialData(body));
 
-      try {
-        const savedItem = await newItem.save();
-        console.log(savedItem);
-        response.json(savedItem);
-      } catch (error) {
-        next(error);
-      }
+      const savedItem = await newItem.save();
+      response.status(201).json(savedItem);
     });
 
-    router.put(`/:id`, async (request, response, next) => {
+    router.put(`/:id`, async (request, response) => {
       const body = request.body;
 
       if (updateValidate) {
@@ -60,17 +46,13 @@ const initResourceController =
         if (error) return response.status(400).json({ error });
       }
 
-      try {
-        const updatedItem = await Model.findByIdAndUpdate(
-          request.params.id,
-          body,
-          { new: true, runValidators: true, context: 'query' },
-        );
+      const updatedItem = await Model.findByIdAndUpdate(
+        request.params.id,
+        body,
+        { new: true, runValidators: true, context: 'query' },
+      );
 
-        response.json(updatedItem);
-      } catch (error) {
-        next(error);
-      }
+      response.json(updatedItem);
     });
   };
 

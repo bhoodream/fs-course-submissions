@@ -6,13 +6,15 @@ mongooseConnection.set('strictQuery', false);
 
 info('connecting to', MONGODB_URI);
 
-mongooseConnection
-  .connect(MONGODB_URI)
-  .then(() => {
+const connect = async () => {
+  try {
+    await mongooseConnection.connect(MONGODB_URI);
     console.log('connected to MongoDB');
-  })
-  .catch((error) => {
+  } catch (error) {
     console.log('error connecting to MongoDB:', error.message);
-  });
+  }
+};
+
+connect();
 
 module.exports = { mongooseConnection };
