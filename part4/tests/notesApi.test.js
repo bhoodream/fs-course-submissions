@@ -4,13 +4,13 @@ const mongoose = require('mongoose');
 const supertest = require('supertest');
 const { app } = require('../app');
 const { Note } = require('../models/note');
-const { initialNotes, notesInDb } = require('./helpers/notesHelper');
+const { resourceItemsInDB } = require('./helpers');
 
 const api = supertest(app);
 
 beforeEach(async () => {
   await Note.deleteMany({});
-  await Promise.all(initialNotes.map((note) => new Note(note).save()));
+  await Promise.all(INITIAL_NOTES.map((note) => new Note(note).save()));
 });
 
 describe('notes', () => {
@@ -24,7 +24,7 @@ describe('notes', () => {
   test('there are two notes', async () => {
     const response = await api.get('/api/notes');
 
-    assert.strictEqual(response.body.length, initialNotes.length);
+    assert.strictEqual(response.body.length, INITIAL_NOTES.length);
   });
 
   test('the first note is about HTML', async () => {
@@ -32,7 +32,7 @@ describe('notes', () => {
 
     const contents = response.body.map((e) => e.content);
 
-    assert(initialNotes.every((n) => contents.includes(n.content)));
+    assert(INITIAL_NOTES.every((n) => contents.includes(n.content)));
   });
 
   test('a valid note can be added ', async () => {
@@ -48,7 +48,7 @@ describe('notes', () => {
       .expect('Content-Type', /application\/json/);
 
     const notesAtEnd = await notesInDb();
-    assert.strictEqual(notesAtEnd.length, initialNotes.length + 1);
+    assert.strictEqual(notesAtEnd.length, INITIAL_NOTES.length + 1);
 
     const contents = notesAtEnd.map((n) => n.content);
 
@@ -64,7 +64,7 @@ describe('notes', () => {
 
     const notesAtEnd = await notesInDb();
 
-    assert.strictEqual(notesAtEnd.length, initialNotes.length);
+    assert.strictEqual(notesAtEnd.length, INITIAL_NOTES.length);
   });
 
   test('a specific note can be viewed', async () => {
@@ -91,10 +91,23 @@ describe('notes', () => {
     const contents = notesAtEnd.map((r) => r.content);
     assert(!contents.includes(noteToDelete.content));
 
-    assert.strictEqual(notesAtEnd.length, initialNotes.length - 1);
+    assert.strictEqual(notesAtEnd.length, INITIAL_NOTES.length - 1);
   });
 });
 
 after(async () => {
   await mongoose.connection.close();
 });
+
+const INITIAL_NOTES = [
+  {
+    content: 'HTML is easy',
+    important: false,
+  },
+  {
+    content: 'Browser can execute only JavaScript',
+    important: true,
+  },
+];
+
+const notesInDb = () => resourceItemsInDB(Note);

@@ -4,13 +4,13 @@ const mongoose = require('mongoose');
 const supertest = require('supertest');
 const { app } = require('../app');
 const { Blog } = require('../models/blog');
-const { initialBlogs } = require('./helpers/blogsHelper');
+const { resourceItemsInDB } = require('./helpers');
 
 const api = supertest(app);
 
 beforeEach(async () => {
   await Blog.deleteMany({});
-  await Promise.all(initialBlogs.map((blog) => new Blog(blog).save()));
+  await Promise.all(INITIAL_BLOGS.map((blog) => new Blog(blog).save()));
 });
 
 describe('blogs', () => {
@@ -24,7 +24,7 @@ describe('blogs', () => {
   test('there are two blogs', async () => {
     const response = await api.get('/api/blogs');
 
-    assert.strictEqual(response.body.length, initialBlogs.length);
+    assert.strictEqual(response.body.length, INITIAL_BLOGS.length);
   });
 
   test('blogs content is correct', async () => {
@@ -32,7 +32,7 @@ describe('blogs', () => {
 
     const titles = response.body.map((e) => e.title);
 
-    assert(initialBlogs.every((b) => titles.includes(b.title)));
+    assert(INITIAL_BLOGS.every((b) => titles.includes(b.title)));
   });
 
   test('blogs ids is correct', async () => {
@@ -48,12 +48,16 @@ describe('blogs', () => {
       url: 'no',
     };
 
-    await api.post('/api/blogs').send(newBlogData);
+    await api
+      .post('/api/blogs')
+      .send(newBlogData)
+      .expect(201)
+      .expect('Content-Type', /application\/json/);
 
-    const response = await api.get('/api/blogs');
-    const lastCreatedBlog = response.body.slice(-1)[0];
+    const finalBlogs = await blogsInDb();
+    const lastCreatedBlog = finalBlogs.slice(-1)[0];
 
-    assert(response.body.length === initialBlogs.length + 1);
+    assert(finalBlogs.length === INITIAL_BLOGS.length + 1);
     assert.deepStrictEqual(lastCreatedBlog, {
       ...newBlogData,
       id: lastCreatedBlog.id,
@@ -67,8 +71,48 @@ describe('blogs', () => {
       .send({ author: 'Vadim', likes: 1234 })
       .expect(400);
   });
+
+  test('blogs is deleting', async () => {
+    const [blog] = await blogsInDb();
+
+    await api.delete(`/api/blogs/${blog.id}`).expect(204);
+    const finalBlogs = await blogsInDb();
+
+    assert(!finalBlogs.map((b) => b.title).includes(blog.title));
+    assert.strictEqual(finalBlogs.length, INITIAL_BLOGS.length - 1);
+  });
+
+  test('blogs is updating', async () => {
+    const [blog] = await blogsInDb();
+    const newAuthor = 'updated blog';
+
+    await api
+      .put(`/api/blogs/${blog.id}`)
+      .send({ ...blog, author: newAuthor })
+      .expect(200);
+    const finalBlogs = await blogsInDb();
+
+    assert(finalBlogs.map((b) => b.author).includes(newAuthor));
+  });
 });
 
 after(async () => {
   await mongoose.connection.close();
 });
+
+const INITIAL_BLOGS = [
+  {
+    title: 'HTML is easy',
+    author: 'fs-open',
+    url: 'https://fullstackopen.com/en/part4/testing_the_backend',
+    likes: 0,
+  },
+  {
+    title: 'JS is note easy',
+    author: 'Vadim',
+    url: 'https://fullstackopen.com/en/part4/testing_the_backend',
+    likes: 15,
+  },
+];
+
+const blogsInDb = () => resourceItemsInDB(Blog);
