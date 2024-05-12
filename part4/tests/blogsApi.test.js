@@ -10,6 +10,7 @@ const {
   testingItemsInDB,
 } = require('./helpers');
 const { pick } = require('lodash');
+const { generateAuthToken } = require('../utils/auth');
 
 const api = supertest(app);
 
@@ -57,6 +58,7 @@ describe('blogs', () => {
 
     await api
       .post('/api/blogs')
+      .set('Authorization', generateAuthToken(user.id))
       .send({ ...newBlogData, userId: user.id })
       .expect(201)
       .expect('Content-Type', /application\/json/);
@@ -76,8 +78,10 @@ describe('blogs', () => {
 
   test('blogs is handle bad creating data', async () => {
     const [user] = await testingUsersInDB();
+
     await api
       .post('/api/blogs')
+      .set('Authorization', generateAuthToken(user.id))
       .send({ author: 'Vadim', likes: 1234, userId: user.id })
       .expect(400);
   });

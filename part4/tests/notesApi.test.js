@@ -9,6 +9,7 @@ const {
   shutdownTestingMongodb,
   testingItemsInDB,
 } = require('./helpers');
+const { generateAuthToken } = require('../utils/auth');
 
 const api = supertest(app);
 
@@ -49,6 +50,7 @@ describe('notes', () => {
 
     await api
       .post('/api/notes')
+      .set('Authorization', generateAuthToken(user.id))
       .send({ ...newNote, userId: user.id })
       .expect(201)
       .expect('Content-Type', /application\/json/);
@@ -62,11 +64,16 @@ describe('notes', () => {
   });
 
   test('note without content is not added', async () => {
+    const [user] = await testingUsersInDB();
     const newNote = {
       important: true,
     };
 
-    await api.post('/api/notes').send(newNote).expect(400);
+    await api
+      .post('/api/notes')
+      .set('Authorization', generateAuthToken(user.id))
+      .send(newNote)
+      .expect(400);
 
     const notesAtEnd = await notesInDB();
 

@@ -12,9 +12,10 @@ DELETE http://localhost:3001/api/persons/6637ee6dec64435a35a0efad
 
 POST http://localhost:3001/api/persons
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjQwYzJlNjdmZDIxYWZjMTIxMDE0MDMiLCJpYXQiOjE3MTU1NDk1MzJ9.qDvzWq-TCEU_Z3n1whWnFsNadDAWCGPTSMHv-zg866s
 
 {
-    "name": "21312",
+    "name": "asd21312",
     "phone": "21-1231232133",
     "userId": "663ff3c63c2b7a4d803ece5f"
 }

@@ -1,7 +1,7 @@
-const bcrypt = require('bcrypt');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const { User } = require('../models/user');
 const { default: mongoose } = require('mongoose');
+const { generatePasswordHash } = require('../utils/auth');
 
 const mongodbMemoryServer = MongoMemoryServer.create();
 
@@ -31,7 +31,7 @@ const createTestingUser = async () => {
   await User.deleteMany({});
 
   const username = 'root';
-  const passwordHash = await bcrypt.hash('secret', 10);
+  const passwordHash = await generatePasswordHash('password');
 
   return new User({ username, passwordHash }).save();
 };

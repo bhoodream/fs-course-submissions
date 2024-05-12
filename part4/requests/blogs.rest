@@ -12,9 +12,10 @@ DELETE http://localhost:3001/api/blogs/663e41e47ce0081ebc18a8c8
 
 POST http://localhost:3001/api/blogs
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjQwYzJlNjdmZDIxYWZjMTIxMDE0MDMiLCJpYXQiOjE3MTU1NDk1MzJ9.qDvzWq-TCEU_Z3n1whWnFsNadDAWCGPTSMHv-zg866s
 
 {
-    "title": "test with user",
+    "title": "112test with user",
     "author": "213",
     "url": "213",
     "userId": "663ff3c63c2b7a4d803ece5f"

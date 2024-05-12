@@ -1,4 +1,5 @@
 const { User } = require('../models/user');
+const { expressAuthMiddleware } = require('./auth');
 
 const initResourceController =
   (router) =>
@@ -27,10 +28,14 @@ const initResourceController =
       response.status(204).end();
     });
 
-    router.post(`/`, async (request, response) => {
+    router.post(`/`, expressAuthMiddleware(), async (request, response) => {
       const body = request.body;
 
-      const user = await User.findById(body.userId);
+      if (!request.auth.userId) {
+        return response.status(401).json({ error: 'token invalid' });
+      }
+
+      const user = await User.findById(request.auth.userId);
 
       if (createValidate) {
         const error = await createValidate(body);
@@ -40,7 +45,7 @@ const initResourceController =
 
       const newItem = new Model({
         ...initialData(body),
-        user: user.id,
+        user: user._id,
       });
 
       const savedItem = await newItem.save();

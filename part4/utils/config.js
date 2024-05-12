@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 const { getTestingMongodbUri } = require('../tests/helpers');
 
 const getMongoDBUri = async () => {
@@ -10,5 +8,4 @@ const getMongoDBUri = async () => {
 
 module.exports = {
   getMongoDBUri,
-  PORT: process.env.PORT,
 };
