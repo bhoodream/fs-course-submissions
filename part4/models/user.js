@@ -16,6 +16,18 @@ const userSchema = new mongoose.Schema(
         ref: 'Note',
       },
     ],
+    people: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Person',
+      },
+    ],
+    blogs: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Blog',
+      },
+    ],
   },
   getMongoSchemaOptions({
     toJSON: {

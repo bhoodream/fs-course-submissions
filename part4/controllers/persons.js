@@ -4,7 +4,7 @@ const { validatePerson } = require('../utils/validate');
 const personsRouter = require('express').Router();
 
 initResourceController(personsRouter)({
-  resource: 'persons',
+  resource: 'people',
   Model: Person,
   createValidate: async (body) => {
     const persons = await Person.find({});
