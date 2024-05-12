@@ -9,8 +9,9 @@ const {
   shutdownTestingMongodb,
   testingItemsInDB,
 } = require('./helpers');
-const { pick } = require('lodash');
+const { pick, uniqueId } = require('lodash');
 const { generateAuthToken } = require('../utils/auth');
+const { User } = require('../models/user');
 
 const api = supertest(app);
 
@@ -72,11 +73,18 @@ describe('blogs', () => {
       likes: 0,
     };
 
-    assert(finalBlogs.length === INITIAL_BLOGS.length + 1);
+    assert.strictEqual(finalBlogs.length, INITIAL_BLOGS.length + 1);
     assert.deepStrictEqual(lastCreatedBlog, expectBlog);
   });
 
   test('blogs is handle bad creating data', async () => {
+    await api
+      .post('/api/blogs')
+      .send({ title: 'new blog', author: 'me', url: 'no' })
+      .expect(401);
+  });
+
+  test('blogs cant creating without auth', async () => {
     const [user] = await testingUsersInDB();
 
     await api
@@ -87,26 +95,118 @@ describe('blogs', () => {
   });
 
   test('blogs is deleting', async () => {
-    const [blog] = await blogsInDB();
+    const [user] = await testingUsersInDB();
+    const blog = await new Blog({
+      title: 'new blog',
+      author: 'me',
+      url: 'no',
+      user: user.id,
+    }).save();
 
-    await api.delete(`/api/blogs/${blog.id}`).expect(204);
+    await api
+      .delete(`/api/blogs/${blog._id}`)
+      .set('Authorization', generateAuthToken(user.id))
+      .expect(204);
     const finalBlogs = await blogsInDB();
 
     assert(!finalBlogs.map((b) => b.title).includes(blog.title));
-    assert.strictEqual(finalBlogs.length, INITIAL_BLOGS.length - 1);
+    assert.strictEqual(finalBlogs.length, INITIAL_BLOGS.length);
+  });
+
+  test('cant delete without auth', async () => {
+    const [blog] = await blogsInDB();
+
+    await api.delete(`/api/blogs/${blog.id}`).expect(401);
+
+    const finalBlogs = await blogsInDB();
+
+    assert(finalBlogs.map((b) => b.title).includes(blog.title));
+    assert.strictEqual(finalBlogs.length, INITIAL_BLOGS.length);
+  });
+
+  test('cant delete someone elses blogs', async () => {
+    const [user] = await testingUsersInDB();
+    const anotherUser = await new User({
+      username: uniqueId(),
+      password: 'password',
+      name: 'name',
+    }).save();
+    const blog = await new Blog({
+      title: 'new blog',
+      author: 'me',
+      url: 'no',
+      user: anotherUser._id,
+    }).save();
+
+    await api
+      .delete(`/api/blogs/${blog._id}`)
+      .set('Authorization', generateAuthToken(user.id))
+      .expect(403);
+    const finalBlogs = await blogsInDB();
+
+    assert(finalBlogs.map((b) => b.title).includes(blog.title));
+    assert.strictEqual(finalBlogs.length, INITIAL_BLOGS.length + 1);
   });
 
   test('blogs is updating', async () => {
-    const [blog] = await blogsInDB();
+    const [user] = await testingUsersInDB();
+    const blogData = {
+      title: 'new blog',
+      author: 'me',
+      url: 'no',
+      user: user.id,
+    };
+    const blog = await new Blog(blogData).save();
     const newAuthor = 'updated blog';
 
     await api
-      .put(`/api/blogs/${blog.id}`)
-      .send({ ...blog, author: newAuthor })
+      .put(`/api/blogs/${blog._id}`)
+      .set('Authorization', generateAuthToken(user.id))
+      .send({ ...blogData, author: newAuthor })
       .expect(200);
     const finalBlogs = await blogsInDB();
 
     assert(finalBlogs.map((b) => b.author).includes(newAuthor));
+  });
+
+  test('blogs cant updating without auth', async () => {
+    const [user] = await testingUsersInDB();
+    const blogData = {
+      title: 'new blog',
+      author: 'me',
+      url: 'no',
+      user: user.id,
+    };
+    const blog = await new Blog(blogData).save();
+    const newAuthor = 'updated blog';
+
+    await api
+      .put(`/api/blogs/${blog._id}`)
+      .send({ ...blogData, author: newAuthor })
+      .expect(401);
+  });
+
+  test('cant update someone elses blogs', async () => {
+    const [user] = await testingUsersInDB();
+    const anotherUser = await new User({
+      username: uniqueId(),
+      password: 'password',
+      name: 'name',
+    }).save();
+    const blogData = {
+      title: 'new blog',
+      author: 'me',
+      url: 'no',
+      user: anotherUser.id,
+    };
+    const blog = await new Blog(blogData).save();
+    const newAuthor = 'updated blog';
+
+    await api
+      .put(`/api/blogs/${blog._id}`)
+      .set('Authorization', generateAuthToken(user.id))
+      .send({ ...blogData, author: newAuthor })
+      .expect(403);
   });
 });
 

@@ -94,17 +94,21 @@ describe('notes', () => {
   });
 
   test('a note can be deleted', async () => {
-    const notesAtStart = await notesInDB();
-    const noteToDelete = notesAtStart[0];
+    const [user] = await testingUsersInDB();
+    const note = await new Note({
+      content: 'test 12345',
+      important: false,
+      user: user.id,
+    }).save();
 
-    await api.delete(`/api/notes/${noteToDelete.id}`).expect(204);
+    await api
+      .delete(`/api/notes/${note.id}`)
+      .set('Authorization', generateAuthToken(user.id))
+      .expect(204);
+    const finalNotes = await notesInDB();
 
-    const notesAtEnd = await notesInDB();
-
-    const contents = notesAtEnd.map((r) => r.content);
-    assert(!contents.includes(noteToDelete.content));
-
-    assert.strictEqual(notesAtEnd.length, INITIAL_NOTES.length - 1);
+    assert(!finalNotes.map((b) => b.content).includes(note.content));
+    assert.strictEqual(finalNotes.length, INITIAL_NOTES.length);
   });
 });
 

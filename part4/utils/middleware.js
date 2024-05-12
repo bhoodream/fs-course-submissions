@@ -21,6 +21,10 @@ const errorHandler = (err, request, response, next) => {
       .json({ error: 'expected `username` to be unique' });
   } else if (err.name === 'JsonWebTokenError') {
     return response.status(401).json({ error: 'token invalid' });
+  } else if (error.name === 'TokenExpiredError') {
+    return response.status(401).json({
+      error: 'token expired',
+    });
   }
 
   next(err);

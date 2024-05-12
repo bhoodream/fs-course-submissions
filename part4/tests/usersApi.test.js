@@ -23,6 +23,26 @@ describe('users', () => {
     assert.strictEqual(response.body.length, 1);
   });
 
+  test('bad data', async () => {
+    const usersAtStart = await testingUsersInDB();
+
+    const newUser = {
+      username: '12',
+      name: 'Matti Luukkainen',
+      password: '21',
+    };
+
+    const { body } = await api.post('/api/users').send(newUser).expect(400);
+
+    assert.strictEqual(body.error, 'bad password');
+
+    const usersAtEnd = await testingUsersInDB();
+    assert.strictEqual(usersAtEnd.length, usersAtStart.length);
+
+    const usernames = usersAtEnd.map((u) => u.username);
+    assert(!usernames.includes(newUser.username));
+  });
+
   test('creation succeeds with a fresh username', async () => {
     const usersAtStart = await testingUsersInDB();
 

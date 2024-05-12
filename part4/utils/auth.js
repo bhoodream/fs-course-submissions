@@ -1,11 +1,16 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { expressjwt } = require('express-jwt');
-const { JWT_ALGORITHM, PASSWORD_HASH_ROUNDS } = require('../constants/config');
+const {
+  JWT_ALGORITHM,
+  PASSWORD_HASH_ROUNDS,
+  JWT_EXPIRED_SEC,
+} = require('../constants/config');
 
 const generateAuthToken = (userId) => {
   const jwtToken = jwt.sign({ userId }, process.env.SECRET, {
     algorithm: JWT_ALGORITHM,
+    expiresIn: JWT_EXPIRED_SEC,
   });
 
   return `Bearer ${jwtToken}`;
