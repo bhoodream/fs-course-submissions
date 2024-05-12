@@ -1,14 +1,19 @@
 const { describe, test, after, beforeEach } = require('node:test');
 const assert = require('node:assert');
-const mongoose = require('mongoose');
 const supertest = require('supertest');
 const { app } = require('../app');
 const { Note } = require('../models/note');
-const { resourceItemsInDB } = require('./helpers');
+const {
+  createTestingUser,
+  testingUsersInDB,
+  shutdownTestingMongodb,
+  testingItemsInDB,
+} = require('./helpers');
 
 const api = supertest(app);
 
 beforeEach(async () => {
+  await createTestingUser();
   await Note.deleteMany({});
   await Promise.all(INITIAL_NOTES.map((note) => new Note(note).save()));
 });
@@ -36,6 +41,7 @@ describe('notes', () => {
   });
 
   test('a valid note can be added ', async () => {
+    const [user] = await testingUsersInDB();
     const newNote = {
       content: 'async/await simplifies making async calls',
       important: true,
@@ -43,11 +49,11 @@ describe('notes', () => {
 
     await api
       .post('/api/notes')
-      .send(newNote)
+      .send({ ...newNote, userId: user.id })
       .expect(201)
       .expect('Content-Type', /application\/json/);
 
-    const notesAtEnd = await notesInDb();
+    const notesAtEnd = await notesInDB();
     assert.strictEqual(notesAtEnd.length, INITIAL_NOTES.length + 1);
 
     const contents = notesAtEnd.map((n) => n.content);
@@ -62,13 +68,13 @@ describe('notes', () => {
 
     await api.post('/api/notes').send(newNote).expect(400);
 
-    const notesAtEnd = await notesInDb();
+    const notesAtEnd = await notesInDB();
 
     assert.strictEqual(notesAtEnd.length, INITIAL_NOTES.length);
   });
 
   test('a specific note can be viewed', async () => {
-    const notesAtStart = await notesInDb();
+    const notesAtStart = await notesInDB();
 
     const noteToView = notesAtStart[0];
 
@@ -81,12 +87,12 @@ describe('notes', () => {
   });
 
   test('a note can be deleted', async () => {
-    const notesAtStart = await notesInDb();
+    const notesAtStart = await notesInDB();
     const noteToDelete = notesAtStart[0];
 
     await api.delete(`/api/notes/${noteToDelete.id}`).expect(204);
 
-    const notesAtEnd = await notesInDb();
+    const notesAtEnd = await notesInDB();
 
     const contents = notesAtEnd.map((r) => r.content);
     assert(!contents.includes(noteToDelete.content));
@@ -95,9 +101,7 @@ describe('notes', () => {
   });
 });
 
-after(async () => {
-  await mongoose.connection.close();
-});
+after(shutdownTestingMongodb);
 
 const INITIAL_NOTES = [
   {
@@ -110,4 +114,4 @@ const INITIAL_NOTES = [
   },
 ];
 
-const notesInDb = () => resourceItemsInDB(Note);
+const notesInDB = () => testingItemsInDB(Note);

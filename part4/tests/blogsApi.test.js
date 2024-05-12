@@ -1,14 +1,20 @@
 const { describe, test, after, beforeEach } = require('node:test');
 const assert = require('node:assert');
-const mongoose = require('mongoose');
 const supertest = require('supertest');
 const { app } = require('../app');
 const { Blog } = require('../models/blog');
-const { resourceItemsInDB } = require('./helpers');
+const {
+  createTestingUser,
+  testingUsersInDB,
+  shutdownTestingMongodb,
+  testingItemsInDB,
+} = require('./helpers');
+const { pick } = require('lodash');
 
 const api = supertest(app);
 
 beforeEach(async () => {
+  await createTestingUser();
   await Blog.deleteMany({});
   await Promise.all(INITIAL_BLOGS.map((blog) => new Blog(blog).save()));
 });
@@ -42,6 +48,7 @@ describe('blogs', () => {
   });
 
   test('blogs is creating', async () => {
+    const [user] = await testingUsersInDB();
     const newBlogData = {
       title: 'new blog',
       author: 'me',
@@ -50,55 +57,56 @@ describe('blogs', () => {
 
     await api
       .post('/api/blogs')
-      .send(newBlogData)
+      .send({ ...newBlogData, userId: user.id })
       .expect(201)
       .expect('Content-Type', /application\/json/);
 
-    const finalBlogs = await blogsInDb();
+    const finalBlogs = await blogsInDB();
     const lastCreatedBlog = finalBlogs.slice(-1)[0];
-
-    assert(finalBlogs.length === INITIAL_BLOGS.length + 1);
-    assert.deepStrictEqual(lastCreatedBlog, {
+    const expectBlog = {
       ...newBlogData,
       id: lastCreatedBlog.id,
+      user: pick(user, ['username', 'id']),
       likes: 0,
-    });
+    };
+
+    assert(finalBlogs.length === INITIAL_BLOGS.length + 1);
+    assert.deepStrictEqual(lastCreatedBlog, expectBlog);
   });
 
   test('blogs is handle bad creating data', async () => {
+    const [user] = await testingUsersInDB();
     await api
       .post('/api/blogs')
-      .send({ author: 'Vadim', likes: 1234 })
+      .send({ author: 'Vadim', likes: 1234, userId: user.id })
       .expect(400);
   });
 
   test('blogs is deleting', async () => {
-    const [blog] = await blogsInDb();
+    const [blog] = await blogsInDB();
 
     await api.delete(`/api/blogs/${blog.id}`).expect(204);
-    const finalBlogs = await blogsInDb();
+    const finalBlogs = await blogsInDB();
 
     assert(!finalBlogs.map((b) => b.title).includes(blog.title));
     assert.strictEqual(finalBlogs.length, INITIAL_BLOGS.length - 1);
   });
 
   test('blogs is updating', async () => {
-    const [blog] = await blogsInDb();
+    const [blog] = await blogsInDB();
     const newAuthor = 'updated blog';
 
     await api
       .put(`/api/blogs/${blog.id}`)
       .send({ ...blog, author: newAuthor })
       .expect(200);
-    const finalBlogs = await blogsInDb();
+    const finalBlogs = await blogsInDB();
 
     assert(finalBlogs.map((b) => b.author).includes(newAuthor));
   });
 });
 
-after(async () => {
-  await mongoose.connection.close();
-});
+after(shutdownTestingMongodb);
 
 const INITIAL_BLOGS = [
   {
@@ -115,4 +123,4 @@ const INITIAL_BLOGS = [
   },
 ];
 
-const blogsInDb = () => resourceItemsInDB(Blog);
+const blogsInDB = () => testingItemsInDB(Blog);

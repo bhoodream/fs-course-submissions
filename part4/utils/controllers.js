@@ -1,8 +1,13 @@
+const { User } = require('../models/user');
+
 const initResourceController =
   (router) =>
-  ({ Model, createValidate, updateValidate, initialData }) => {
+  ({ Model, resource, createValidate, updateValidate, initialData }) => {
     router.get(`/`, async (request, response) => {
-      const items = await Model.find({});
+      const items = await Model.find({}).populate('user', {
+        username: 1,
+        name: 1,
+      });
 
       response.json(items);
     });
@@ -25,15 +30,23 @@ const initResourceController =
     router.post(`/`, async (request, response) => {
       const body = request.body;
 
+      const user = await User.findById(body.userId);
+
       if (createValidate) {
         const error = await createValidate(body);
 
         if (error) return response.status(400).json({ error });
       }
 
-      const newItem = new Model(initialData(body));
+      const newItem = new Model({
+        ...initialData(body),
+        user: user.id,
+      });
 
       const savedItem = await newItem.save();
+      user[resource] = (user[resource] || []).concat(savedItem._id);
+      await user.save();
+
       response.status(201).json(savedItem);
     });
 

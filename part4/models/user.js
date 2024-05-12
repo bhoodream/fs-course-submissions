@@ -1,0 +1,30 @@
+const mongoose = require('mongoose');
+const { getMongoSchemaOptions } = require('../utils/models');
+
+const userSchema = new mongoose.Schema(
+  {
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    name: String,
+    passwordHash: String,
+    notes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Note',
+      },
+    ],
+  },
+  getMongoSchemaOptions({
+    toJSON: {
+      transform: (document, returnedObject) =>
+        delete returnedObject.passwordHash,
+    },
+  }),
+);
+
+const User = mongoose.model('User', userSchema);
+
+module.exports = { User };

@@ -14,9 +14,10 @@ POST http://localhost:3001/api/blogs
 Content-Type: application/json
 
 {
-    "title": "123421312",
+    "title": "test with user",
     "author": "213",
-    "url": "213"
+    "url": "213",
+    "userId": "663ff3c63c2b7a4d803ece5f"
 }
 
 ###

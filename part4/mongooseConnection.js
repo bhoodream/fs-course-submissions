@@ -1,14 +1,15 @@
 const mongooseConnection = require('mongoose');
 const { info, error } = require('./utils/logger');
-const { MONGODB_URI } = require('./utils/config');
+const { getMongoDBUri } = require('./utils/config');
 
 mongooseConnection.set('strictQuery', false);
 
-info('connecting to', MONGODB_URI);
-
 const connect = async () => {
   try {
-    await mongooseConnection.connect(MONGODB_URI);
+    const mongodbUri = await getMongoDBUri();
+
+    info('connecting to', mongodbUri);
+    await mongooseConnection.connect(mongodbUri);
     info('connected to MongoDB');
   } catch (err) {
     error('error connecting to MongoDB:', err.message);

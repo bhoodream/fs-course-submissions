@@ -3,6 +3,7 @@ const { initResourceController } = require('../utils/controllers');
 const blogsRouter = require('express').Router();
 
 initResourceController(blogsRouter)({
+  resource: 'blogs',
   Model: Blog,
   createValidate: async (body) => {
     const blogs = await Blog.find({});

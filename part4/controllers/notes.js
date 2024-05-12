@@ -3,6 +3,7 @@ const { initResourceController } = require('../utils/controllers');
 const notesRouter = require('express').Router();
 
 initResourceController(notesRouter)({
+  resource: 'notes',
   Model: Note,
   createValidate: async (body) => (!body.content ? 'content is missing' : ''),
   initialData: (body) => ({
