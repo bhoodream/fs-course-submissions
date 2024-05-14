@@ -2,12 +2,13 @@ import { useState } from "react";
 import { getAuthUserLS, setAuthUserLS } from "../utils/auth";
 
 export const useCurrentUser = () => {
-  const [user, setUser] = useState(() => getAuthUserLS() || null);
+  const [data, setData] = useState(() => getAuthUserLS() || null);
 
+  const onChange = (newUser) => setData(newUser);
   const logOut = () => {
     setAuthUserLS(null);
-    setUser(null);
+    setData(null);
   };
 
-  return { data: user, onChange: (newUser) => setUser(newUser), logOut };
+  return { data, onChange, logOut };
 };
