@@ -26,15 +26,14 @@ export const Blogs = ({ items, remove, isLoggedIn }) => {
           ? "no blogs..."
           : visibleBlogs.length <= 0
           ? "no blogs found..."
-          : null}
-        {visibleBlogs.map((item) => (
-          <p key={item.id}>
-            {item.title} {item.author}{" "}
-            {isLoggedIn && (
-              <Button text="delete" onClick={() => remove(item)} />
-            )}
-          </p>
-        ))}
+          : visibleBlogs.map((item) => (
+              <p key={item.id}>
+                {item.title} {item.author}{" "}
+                {isLoggedIn && (
+                  <Button text="delete" onClick={() => remove(item)} />
+                )}
+              </p>
+            ))}
       </>
     </div>
   );
