@@ -1,14 +1,10 @@
 import { useState } from "react";
 import { login } from "../services/auth";
-import { useAlert } from "./Alert/useAlert";
-import { Alert } from "./Alert";
 import { getApiErrorMsg } from "../utils/api";
-import { setAuthUserLS } from "../utils/auth";
 
-export const Login = ({ onLogin }) => {
+export const Login = ({ onLogin, notify }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const alert = useAlert();
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -17,14 +13,13 @@ export const Login = ({ onLogin }) => {
 
     if (response.data) {
       onLogin(response.data);
-      setAuthUserLS(response.data);
 
       setUsername("");
       setPassword("");
     } else if (response.error) {
-      alert.show(getApiErrorMsg(response), "error");
+      notify(getApiErrorMsg(response), "error");
     } else {
-      alert.show("unknown error...", "error");
+      notify("unknown error...", "error");
     }
   };
 
@@ -49,7 +44,6 @@ export const Login = ({ onLogin }) => {
         />
       </p>
       <button type="submit">login</button>
-      <Alert {...alert.state} />
     </form>
   );
 };

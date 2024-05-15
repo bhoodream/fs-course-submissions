@@ -1,12 +1,22 @@
-import { Countries } from "./components/Countries";
-import { Courses } from "./components/Courses";
+import { useRef } from "react";
+import { Alert } from "./components/Alert";
+import { useAlert } from "./components/Alert/useAlert";
+import { BlogForm } from "./components/BlogForm";
+import { Blogs } from "./components/Blogs";
 import { Login } from "./components/Login";
-import { PhoneBook } from "./components/PhoneBook";
+import { Toggler } from "./components/Toggler";
 import { User } from "./components/User";
+import { useBlogs } from "./hooks/useBlogs";
 import { useCurrentUser } from "./hooks/useCurrentUser";
 
 function App() {
   const currentUser = useCurrentUser();
+  const alert = useAlert();
+  const blogsFormTogglerRef = useRef();
+  const blogs = useBlogs({
+    notify: alert.show,
+    onAdd: () => blogsFormTogglerRef.current.close(),
+  });
 
   return (
     <div>
@@ -14,13 +24,21 @@ function App() {
       {currentUser.data ? (
         <>
           <User data={currentUser.data} logOut={currentUser.logOut} />
-          <Countries />
-          <PhoneBook />
-          <Courses />
+          <Toggler buttonLabel="Create blog" ref={blogsFormTogglerRef}>
+            <BlogForm onSubmit={blogs.add} />
+          </Toggler>
         </>
       ) : (
-        <Login onLogin={(user) => currentUser.onChange(user)} />
+        <Toggler buttonLabel="log in">
+          <Login onLogin={currentUser.onLogin} notify={alert.show} />
+        </Toggler>
       )}
+      <Alert {...alert.state} />
+      <Blogs
+        items={blogs.items}
+        remove={blogs.remove}
+        isLoggedIn={Boolean(currentUser.data)}
+      />
     </div>
   );
 }
