@@ -1,0 +1,10 @@
+.blogs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.blog {
+  padding: 8px;
+  border: 1px solid black;
+}

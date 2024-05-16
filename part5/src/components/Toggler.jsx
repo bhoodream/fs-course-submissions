@@ -16,5 +16,10 @@ export const Toggler = forwardRef(function Toggler(props, ref) {
       </div>
     );
 
-  return <button onClick={() => setVisible(true)}>{props.buttonLabel}</button>;
+  return (
+    <div style={{ display: "flex", gap: "8px" }}>
+      {props.toggleContent}
+      <button onClick={() => setVisible(true)}>{props.buttonLabel}</button>
+    </div>
+  );
 });
