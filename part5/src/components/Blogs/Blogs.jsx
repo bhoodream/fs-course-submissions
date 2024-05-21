@@ -30,6 +30,7 @@ export const Blogs = ({ userId, items, remove, like }) => {
             : visibleBlogs.length <= 0
             ? "no blogs found..."
             : visibleBlogs.map((item) => {
+                const title = `${item.title} – "${item.author}"`;
                 const isUsersItem =
                   userId && item.user && userId === item.user.id;
 
@@ -38,15 +39,14 @@ export const Blogs = ({ userId, items, remove, like }) => {
                     key={item.id}
                     className={`blog ${isUsersItem ? "blog__yours" : ""}`}
                   >
-                    <Toggler toggleContent={item.title} openLabel={"open"}>
+                    <Toggler toggleContent={title} openLabel={"open"}>
                       <div>
-                        {item.title}
+                        {title}
                         <p>URL: {item.url}</p>
                         <p>
                           Likes: {item.likes}{" "}
                           <Button text="like" onClick={() => like(item)} />
                         </p>
-                        <p>Author: {item.author}</p>
                         {item.user && (
                           <p>
                             User: {item.user.username} ({item.user.name})
