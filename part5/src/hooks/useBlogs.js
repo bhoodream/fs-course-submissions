@@ -4,6 +4,7 @@ import {
   createBlog,
   deleteBlog,
   getBlogs,
+  likeBlog,
   updateBlog,
 } from "../services/blogs";
 import { getApiErrorMsg } from "../utils/api";
@@ -56,6 +57,16 @@ export const useBlogs = ({ notify, onAdd }) => {
     invalidation.invalidate();
   };
 
+  const like = async (blog) => {
+    const response = await likeBlog(blog);
+
+    if (response.error) return notify(getApiErrorMsg(response), "error");
+
+    notify(`Liked ${blog.title}`, "success");
+
+    invalidation.invalidate();
+  };
+
   useEffect(() => {
     getBlogs().then((response) => {
       if (response.error) return notify(getApiErrorMsg(response), "error");
@@ -64,7 +75,7 @@ export const useBlogs = ({ notify, onAdd }) => {
     });
   }, [invalidation.date, notify]);
 
-  return { add, remove, items };
+  return { add, remove, like, items };
 };
 
 const UNIQ_FIELDS = ["title"];

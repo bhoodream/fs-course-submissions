@@ -14,5 +14,5 @@ export const useCurrentUser = () => {
     setData(null);
   };
 
-  return { data, onLogin, logOut };
+  return { data, id: (data || {}).id, onLogin, logOut };
 };

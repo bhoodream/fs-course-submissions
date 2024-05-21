@@ -37,7 +37,8 @@ function App() {
       <Blogs
         items={blogs.items}
         remove={blogs.remove}
-        isLoggedIn={Boolean(currentUser.data)}
+        like={blogs.like}
+        userId={currentUser.id}
       />
     </div>
   );

@@ -23,12 +23,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjQwY
 
 ###
 
-PUT http://localhost:3001/api/blogs/6637edf00aee7f8a79805325
+PUT http://localhost:3001/api/blogs/664c2668ba7180679984ee55
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NjQxMWEwMzA2NmMyYTBlYzNlYWVjZGIiLCJpYXQiOjE3MTYyNjU0ODIsImV4cCI6MTcxNjI2OTA4Mn0.yM2f_6NvNyI1C8oHImS8MxA8YQ2AdIX-qecTjxbTFyk
 
 {
-    "title": "21312",
+    "title": "my blog",
     "author": "asdfasd",
-    "url": "asdfaa",
-    "likes": 213,
+    "url": "asdf",
+    "likes": 2
 }

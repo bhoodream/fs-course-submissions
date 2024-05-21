@@ -1,9 +1,10 @@
 const { User } = require('../models/user');
 const { expressAuthMiddleware } = require('./auth');
+const { mongooseConnection } = require('../mongooseConnection');
 
 const initResourceController =
   (router) =>
-  ({ Model, resource, createValidate, updateValidate, initialData }) => {
+  ({ Model, createValidate, updateValidate, initialData }) => {
     router.get(`/`, async (request, response) => {
       const items = await Model.find({}).populate('user', {
         username: 1,
@@ -31,7 +32,26 @@ const initResourceController =
         if (!(await checkUserOwn(Model, request)))
           return forbiddenError(response);
 
-        await Model.findByIdAndDelete(request.params.id);
+        try {
+          await mongooseConnection.transaction(async (session) => {
+            await Model.findByIdAndDelete(request.params.id).session(session);
+
+            const user = await User.findById(request.auth.userId).session(
+              session,
+            );
+
+            user[Model.collection.collectionName] = (
+              user[Model.collection.collectionName] || []
+            ).filter((item) => item.toString() !== request.params.id);
+
+            await user.save({ session });
+          });
+        } catch (error) {
+          console.error(error);
+
+          return response.status(400).json({ error: error.message });
+        }
+
         response.status(204).end();
       },
     );
@@ -55,7 +75,11 @@ const initResourceController =
       });
 
       const savedItem = await newItem.save();
-      user[resource] = (user[resource] || []).concat(savedItem._id);
+
+      user[Model.collection.collectionName] = (
+        user[Model.collection.collectionName] || []
+      ).concat(savedItem._id);
+
       await user.save();
 
       response.status(201).json(savedItem);
