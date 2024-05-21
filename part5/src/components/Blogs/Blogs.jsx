@@ -33,7 +33,7 @@ export const Blogs = ({ items, remove, isLoggedIn }) => {
             ? "no blogs found..."
             : visibleBlogs.map((item) => (
                 <div key={item.id} className="blog">
-                  <Toggler toggleContent={item.title} buttonLabel={"open"}>
+                  <Toggler toggleContent={item.title} openLabel={"open"}>
                     <div>
                       <p>{item.title}</p>
                       <p>URL: {item.url}</p>

@@ -24,12 +24,12 @@ function App() {
       {currentUser.data ? (
         <>
           <User data={currentUser.data} logOut={currentUser.logOut} />
-          <Toggler buttonLabel="Create blog" ref={blogsFormTogglerRef}>
+          <Toggler openLabel="Create blog" ref={blogsFormTogglerRef}>
             <BlogForm onSubmit={blogs.add} />
           </Toggler>
         </>
       ) : (
-        <Toggler buttonLabel="log in">
+        <Toggler openLabel="log in">
           <Login onLogin={currentUser.onLogin} notify={alert.show} />
         </Toggler>
       )}

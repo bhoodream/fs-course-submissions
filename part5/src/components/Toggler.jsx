@@ -1,6 +1,7 @@
 import { forwardRef, useImperativeHandle, useState } from "react";
 
 export const Toggler = forwardRef(function Toggler(props, ref) {
+  const { toggleContent, children, openLabel, closeLabel = "close" } = props;
   const [visible, setVisible] = useState(false);
 
   useImperativeHandle(ref, () => ({
@@ -10,16 +11,16 @@ export const Toggler = forwardRef(function Toggler(props, ref) {
   if (visible)
     return (
       <div>
-        {props.children}
+        {children}
         <br />
-        <button onClick={() => setVisible(false)}>cancel</button>
+        <button onClick={() => setVisible(false)}>{closeLabel}</button>
       </div>
     );
 
   return (
     <div style={{ display: "flex", gap: "8px" }}>
-      {props.toggleContent}
-      <button onClick={() => setVisible(true)}>{props.buttonLabel}</button>
+      {toggleContent}
+      <button onClick={() => setVisible(true)}>{openLabel}</button>
     </div>
   );
 });
