@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import { useState } from "react";
 import { login } from "../services/auth";
 import { getApiErrorMsg } from "../utils/api";
@@ -46,4 +47,9 @@ export const Login = ({ onLogin, notify }) => {
       <button type="submit">login</button>
     </form>
   );
+};
+
+Login.propTypes = {
+  onLogin: PropTypes.func.isRequired,
+  notify: PropTypes.func.isRequired,
 };

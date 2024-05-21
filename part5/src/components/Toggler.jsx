@@ -1,4 +1,5 @@
 import { forwardRef, useImperativeHandle, useState } from "react";
+import PropTypes from "prop-types";
 
 export const Toggler = forwardRef(function Toggler(props, ref) {
   const { toggleContent, children, openLabel, closeLabel = "close" } = props;
@@ -24,3 +25,9 @@ export const Toggler = forwardRef(function Toggler(props, ref) {
     </div>
   );
 });
+
+Toggler.propTypes = {
+  toggleContent: PropTypes.node,
+  openLabel: PropTypes.string.isRequired,
+  closeLabel: PropTypes.string,
+};
