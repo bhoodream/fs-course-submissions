@@ -12,7 +12,13 @@ initResourceController(blogsRouter)({
       ? `blog with title (${body.title}) already exists`
       : '';
   },
-  updateValidate: (body) => updateValidate(body),
+  updateValidate: async (body) => {
+    const blogs = await Blog.find({});
+
+    return !blogs.some((b) => b.title === body.title)
+      ? `blog with title (${body.title}) not exists`
+      : '';
+  },
   initialData: (body) => ({
     title: body.title,
     author: body.author,
@@ -40,13 +46,5 @@ blogsRouter.put(
     response.json(updatedItem);
   },
 );
-
-const updateValidate = async (body) => {
-  const blogs = await Blog.find({});
-
-  return !blogs.some((b) => b.title === body.title)
-    ? `blog with title (${body.title}) not exists`
-    : '';
-};
 
 module.exports = { blogsRouter };
