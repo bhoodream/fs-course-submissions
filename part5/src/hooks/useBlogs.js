@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDataInvalidation } from "./useDataInvalidation";
 import {
   createBlog,
@@ -12,6 +12,9 @@ import { getApiErrorMsg } from "../utils/api";
 export const useBlogs = ({ notify, onAdd }) => {
   const [items, setItems] = useState([]);
   const invalidation = useDataInvalidation();
+  const sortedItems = useMemo(() => {
+    return items.toSorted((a, b) => b.likes - a.likes);
+  }, [items]);
 
   const add = async (data) => {
     const existsBlog = items.find((blog) =>
@@ -75,7 +78,7 @@ export const useBlogs = ({ notify, onAdd }) => {
     });
   }, [invalidation.date, notify]);
 
-  return { add, remove, like, items };
+  return { add, remove, like, items: sortedItems };
 };
 
 const UNIQ_FIELDS = ["title"];

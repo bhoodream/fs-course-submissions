@@ -22,13 +22,11 @@ export const deleteBlog = (id) => {
 };
 
 export const likeBlog = (blog) => {
-  const likedBlog = {
-    ...blog,
-    likes: (blog.likes || 0) + 1,
-    user: undefined,
-  };
-
-  return updateBlog(likedBlog.id, likedBlog);
+  return service({
+    baseUrl: BASE_URL,
+    method: "put",
+    pathname: `/${blog.id}/like`,
+  });
 };
 
 const BASE_URL = "/api/blogs";

@@ -120,4 +120,9 @@ const authError = (response) =>
 const forbiddenError = (response) =>
   response.status(403).json({ error: 'forbidden' });
 
-module.exports = { initResourceController };
+module.exports = {
+  initResourceController,
+  checkUserOwn,
+  authError,
+  forbiddenError,
+};
