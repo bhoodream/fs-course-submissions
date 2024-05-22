@@ -1,9 +1,8 @@
 import { useMemo } from "react";
-import { Button } from "../Button";
 import { Search } from "../Search";
 import { useSearch } from "../Search/useSearch";
 import "./styles.css";
-import { Toggler } from "../Toggler";
+import { Blog } from "../Blog/Blog";
 
 export const Blogs = ({ userId, items, remove, like }) => {
   const search = useSearch();
@@ -30,34 +29,14 @@ export const Blogs = ({ userId, items, remove, like }) => {
             : visibleBlogs.length <= 0
             ? "no blogs found..."
             : visibleBlogs.map((item) => {
-                const title = `${item.title} – "${item.author}"`;
-                const isUsersItem =
-                  userId && item.user && userId === item.user.id;
-
                 return (
-                  <div
+                  <Blog
                     key={item.id}
-                    className={`blog ${isUsersItem ? "blog__yours" : ""}`}
-                  >
-                    <Toggler toggleContent={title} openLabel={"open"}>
-                      <div>
-                        {title}
-                        <p>URL: {item.url}</p>
-                        <p>
-                          Likes: {item.likes}{" "}
-                          <Button text="like" onClick={() => like(item)} />
-                        </p>
-                        {item.user && (
-                          <p>
-                            User: {item.user.username} ({item.user.name})
-                          </p>
-                        )}
-                        {isUsersItem && (
-                          <Button text="delete" onClick={() => remove(item)} />
-                        )}
-                      </div>
-                    </Toggler>
-                  </div>
+                    data={item}
+                    userId={userId}
+                    like={like}
+                    remove={remove}
+                  />
                 );
               })}
         </div>

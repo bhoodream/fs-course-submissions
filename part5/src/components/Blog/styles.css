@@ -1,0 +1,9 @@
+.blog {
+  padding: 8px;
+  border: 1px solid black;
+}
+
+.blog__yours {
+  border-color: greenyellow;
+  border-width: 3px;
+}
