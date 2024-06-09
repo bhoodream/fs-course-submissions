@@ -2,6 +2,17 @@ import { render, screen } from "@testing-library/react";
 import { Blog } from "./Blog";
 import userEvent from "@testing-library/user-event";
 
+test("snapshot", async () => {
+  const likeMock = vi.fn();
+  const removeMock = vi.fn();
+
+  const { container } = render(
+    <Blog data={BLOG} userId={USER_ID} like={likeMock} remove={removeMock} />
+  );
+
+  expect(container).toMatchSnapshot();
+});
+
 test("renders content", async () => {
   const expectTitle = `${BLOG.title} – "${BLOG.author}"`;
   const likeMock = vi.fn();
@@ -75,9 +86,10 @@ test("actions", async () => {
   const deleteBtn = screen.getByText("delete");
 
   await user.click(likeBtn);
+  await user.click(likeBtn);
   await user.click(deleteBtn);
 
-  expect(likeMock.mock.calls).toHaveLength(1);
+  expect(likeMock.mock.calls).toHaveLength(2);
   expect(removeMock.mock.calls).toHaveLength(1);
 });
 

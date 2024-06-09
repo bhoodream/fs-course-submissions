@@ -11,7 +11,7 @@ export const Toggler = forwardRef(function Toggler(props, ref) {
 
   if (visible)
     return (
-      <div className="toggler toggler__closed">
+      <div className="toggler toggler__opened">
         {children}
         <br />
         <button onClick={() => setVisible(false)}>{closeLabel}</button>
@@ -21,7 +21,7 @@ export const Toggler = forwardRef(function Toggler(props, ref) {
   return (
     <div
       style={{ display: "flex", gap: "8px" }}
-      className="toggler toggler__opened"
+      className="toggler toggler__closed"
     >
       {toggleContent}
       <button onClick={() => setVisible(true)}>{openLabel}</button>

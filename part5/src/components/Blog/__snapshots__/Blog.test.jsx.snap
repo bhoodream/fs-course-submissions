@@ -1,0 +1,19 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`snapshot 1`] = `
+<div>
+  <div
+    class="blog blog__yours"
+  >
+    <div
+      class="toggler toggler__closed"
+      style="display: flex; gap: 8px;"
+    >
+      title – "author"
+      <button>
+        open
+      </button>
+    </div>
+  </div>
+</div>
+`;
