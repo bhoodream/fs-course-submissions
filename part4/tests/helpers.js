@@ -1,9 +1,9 @@
-const { MongoMemoryReplSet } = require('mongodb-memory-server');
+const { MongoMemoryServer } = require('mongodb-memory-server');
 const { User } = require('../models/user');
 const { default: mongoose } = require('mongoose');
 const { generatePasswordHash } = require('../utils/auth');
 
-const mongodbMemoryServer = MongoMemoryReplSet.create({
+const mongodbMemoryServer = MongoMemoryServer.create({
   replSet: { count: 1 },
 });
 
@@ -29,19 +29,19 @@ const getTestingMongodbUri = async () => {
   return (await mongodbMemoryServer).getUri();
 };
 
-const createTestingUser = async () => {
+const createRootUser = async () => {
   await User.deleteMany({});
 
   const username = 'root';
-  const passwordHash = await generatePasswordHash('password');
+  const passwordHash = await generatePasswordHash('root');
 
-  return new User({ username, passwordHash }).save();
+  return new User({ username, name: 'Root User', passwordHash }).save();
 };
 
 module.exports = {
   testingItemsInDB,
   testingUsersInDB,
-  createTestingUser,
+  createRootUser,
   getTestingMongodbUri,
   shutdownTestingMongodb,
 };

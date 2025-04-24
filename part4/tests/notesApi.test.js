@@ -4,7 +4,7 @@ const supertest = require('supertest');
 const { app } = require('../app');
 const { Note } = require('../models/note');
 const {
-  createTestingUser,
+  createRootUser,
   testingUsersInDB,
   shutdownTestingMongodb,
   testingItemsInDB,
@@ -14,7 +14,7 @@ const { generateAuthToken } = require('../utils/auth');
 const api = supertest(app);
 
 beforeEach(async () => {
-  await createTestingUser();
+  await createRootUser();
   await Note.deleteMany({});
   await Promise.all(INITIAL_NOTES.map((note) => new Note(note).save()));
 });

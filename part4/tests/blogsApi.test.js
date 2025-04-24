@@ -4,7 +4,7 @@ const supertest = require('supertest');
 const { app } = require('../app');
 const { Blog } = require('../models/blog');
 const {
-  createTestingUser,
+  createRootUser,
   testingUsersInDB,
   shutdownTestingMongodb,
   testingItemsInDB,
@@ -16,7 +16,7 @@ const { User } = require('../models/user');
 const api = supertest(app);
 
 beforeEach(async () => {
-  await createTestingUser();
+  await createRootUser();
   await Blog.deleteMany({});
   await Promise.all(INITIAL_BLOGS.map((blog) => new Blog(blog).save()));
 });

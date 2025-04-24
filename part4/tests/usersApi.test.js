@@ -4,14 +4,14 @@ const supertest = require('supertest');
 const { app } = require('../app');
 
 const {
-  createTestingUser,
+  createRootUser,
   testingUsersInDB,
   shutdownTestingMongodb,
 } = require('./helpers');
 
 const api = supertest(app);
 
-beforeEach(createTestingUser);
+beforeEach(createRootUser);
 
 describe('users', () => {
   test('smoke', async () => {
