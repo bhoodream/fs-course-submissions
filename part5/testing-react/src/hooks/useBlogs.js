@@ -13,7 +13,7 @@ export const useBlogs = ({ notify, onAdd }) => {
   const [items, setItems] = useState([]);
   const invalidation = useDataInvalidation();
   const sortedItems = useMemo(() => {
-    return items.toSorted((a, b) => b.likes - a.likes);
+    return [...items].sort((a, b) => b.likes - a.likes);
   }, [items]);
 
   const add = async (data) => {

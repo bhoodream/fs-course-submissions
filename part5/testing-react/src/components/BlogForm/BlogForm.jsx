@@ -22,6 +22,7 @@ export const BlogForm = ({ onSubmit }) => {
           <p key={name}>
             {name}
             <input
+              data-testid={`blog-${name}`}
               required
               value={formState[name]}
               name={name}
