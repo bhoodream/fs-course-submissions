@@ -1,7 +1,9 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Part 5", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
+    await request.post("http://localhost:3001/api/testing/reset-blogs");
+
     await page.goto("http://localhost:5173");
   });
 
@@ -31,6 +33,23 @@ test.describe("Part 5", () => {
       await page.getByRole("button", { name: "add" }).click();
 
       await expect(page.getByText('title – "author"')).toBeVisible();
+    });
+
+    test.describe("and a blog exists", () => {
+      test.beforeEach(async ({ page }) => {
+        await page.getByRole("button", { name: "Create blog" }).click();
+        await page.getByTestId("blog-title").fill("title");
+        await page.getByTestId("blog-author").fill("author");
+        await page.getByTestId("blog-url").fill("url");
+
+        await page.getByRole("button", { name: "add" }).click();
+      });
+
+      test("importance can be changed", async ({ page }) => {
+        await page.getByRole("button", { name: "open" }).click();
+        await page.getByRole("button", { name: "like" }).click();
+        await expect(page.getByText("Likes: 1")).toBeVisible();
+      });
     });
   });
 });

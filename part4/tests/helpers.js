@@ -1,9 +1,9 @@
-const { MongoMemoryServer } = require('mongodb-memory-server');
+const { MongoMemoryReplSet } = require('mongodb-memory-server');
 const { User } = require('../models/user');
 const { default: mongoose } = require('mongoose');
 const { generatePasswordHash } = require('../utils/auth');
 
-const mongodbMemoryServer = MongoMemoryServer.create({
+const mongodbMemoryServer = MongoMemoryReplSet.create({
   replSet: { count: 1 },
 });
 
